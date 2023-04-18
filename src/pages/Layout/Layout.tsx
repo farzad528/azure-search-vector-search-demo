@@ -1,6 +1,6 @@
 import styles from "./Layout.module.css";
 import search from "../../assets/search.svg";
-import { Link } from "react-router-dom";
+import { Link, NavLink, Outlet } from "react-router-dom";
 import github from "../../assets/github.svg";
 
 export const Layout = () => {
@@ -19,10 +19,35 @@ export const Layout = () => {
           <nav>
             <ul className={styles.headerNavList}>
               <li className={styles.headerNavLeftMargin}>
+                <NavLink
+                  to="/"
+                  className={({ isActive }) =>
+                    isActive
+                      ? styles.headerNavPageLinkActive
+                      : styles.headerNavPageLink
+                  }
+                >
+                  Text
+                </NavLink>
+              </li>
+              <li className={styles.headerNavLeftMargin}>
+                <NavLink
+                  to="/image"
+                  className={({ isActive }) =>
+                    isActive
+                      ? styles.headerNavPageLinkActive
+                      : styles.headerNavPageLink
+                  }
+                >
+                  Image
+                </NavLink>
+              </li>
+              <li className={styles.headerNavLeftMargin}>
                 <a
                   href="https://aka.ms/entgptsearch"
                   target={"_blank"}
                   title="Github repository link"
+                  rel="noreferrer"
                 >
                   <img
                     src={github}
@@ -39,6 +64,7 @@ export const Layout = () => {
           </h4>
         </div>
       </header>
+      <Outlet />
     </div>
   );
 };
