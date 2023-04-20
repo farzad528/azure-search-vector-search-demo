@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   Checkbox,
   ChoiceGroup,
@@ -13,9 +14,7 @@ import {
   Search24Regular,
   SearchInfo20Regular,
 } from "@fluentui/react-icons";
-import { useState } from "react";
-import generateImageQueryVector from "../../api/generateImageQueryVector";
-import { getImageSearchResults } from "../../api/imageSearch";
+import axios from "axios";
 import styles from "./ImagePage.module.css";
 import noResults from "../../assets/no-results.svg";
 
@@ -32,6 +31,50 @@ const approaches: IChoiceGroupOption[] = [
   { key: "vecf", text: "Vectors with Filter" },
   { key: "hs", text: "Vectors + Text (Hybrid Search)" },
 ];
+
+const apiUrl = process.env.REACT_APP_COGNITIVE_SERVICES_ENDPOINT;
+const apiKey = process.env.REACT_APP_COGNITIVE_SERVICES_API_KEY;
+const apiVersion = process.env.REACT_APP_COGNITIVE_SERVICES_API_VERSION;
+
+async function generateImageQueryVector(queryVector: string) {
+  const requestData = {
+    text: queryVector,
+  };
+  const response = await axios.post(
+    `${apiUrl}/computervision/retrieval:vectorizeText?api-version=${apiVersion}`,
+    requestData,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "Ocp-Apim-Subscription-Key": apiKey,
+      },
+    }
+  );
+  const embeddings = response.data.vector;
+  console.log(embeddings);
+  return embeddings;
+}
+
+async function getImageSearchResults(vector: number[]) {
+  const payload: any = {
+    vector: {
+      value: vector,
+      fields: "imageVector",
+      k: 10,
+    },
+    select: "title,imageUrl",
+  };
+
+  const url = `${process.env.REACT_APP_SEARCH_SERVICE_ENDPOINT}/indexes/${process.env.REACT_APP_INDEX_NAME}/docs/search?api-version=${process.env.REACT_APP_API_VERSION}`;
+  const response = await axios.post(url, payload, {
+    headers: {
+      "Content-Type": "application/json",
+      "api-key": `${process.env.REACT_APP_SEARCH_SERVICE_ADMIN_KEY ?? ""}`,
+    },
+  });
+
+  return response.data;
+}
 
 export const ImagePage = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -50,11 +93,9 @@ export const ImagePage = () => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       setLoading(true);
-      // Pass searchQuery value to generateImageQueryVector function and await the result
       const queryVector = await generateImageQueryVector(searchQuery);
       setImageQueryVector(queryVector);
-      setApiRequest(true);
-      const results = await getImageSearchResults(searchQuery);
+      const results = await getImageSearchResults(queryVector);
       console.log(results.value);
       setCount(results["@odata.count"]);
       setSearchResults(results.value);
@@ -124,36 +165,14 @@ export const ImagePage = () => {
       <div className={styles.spinner}>
         {loading && <Spinner label="Getting results" />}
       </div>
-      {/* {!loading && count === 0 && apiRequest ? (
-        <div className={styles.noResultsFound}>
-          <img alt="no results" src={noResults} />
-          <p>Bummer. No results found.</p>
-          <p>Try rephrasing your search</p>
-        </div>
-      ) : count > 0 && apiRequest ? (
-        <div className={styles.resultCount}>
-          Showing {count} result
-          {searchResults.length === 1 ? "" : "s"}
-        </div>
-      ) : (
-        <p>Type something to do a vector search over images!</p>
-      )} */}
       <div className={styles.searchResultsContainer}>
-        <Stack className={styles.imageSearchResultCard}>
-          <div className={styles.imageContainer}>
-            <img src="https://images.pexels.com/photos/1643113/pexels-photo-1643113.jpeg" alt="brown mountains" />
-          </div>
-        </Stack>
-        <Stack className={styles.imageSearchResultCard}>
-          <div className={styles.imageContainer}>
-            <img src="https://images.pexels.com/photos/1785493/pexels-photo-1785493.jpeg" alt="brown mountains" />
-          </div>
-        </Stack>
-        <Stack className={styles.imageSearchResultCard}>
-          <div className={styles.imageContainer}>
-            <img src="https://images.pexels.com/photos/2686558/pexels-photo-2686558.jpeg" alt="brown mountains" />
-          </div>
-        </Stack>
+        {searchResults.map((result: SearchResult) => (
+          <Stack key={result.id} className={styles.imageSearchResultCard}>
+            <div className={styles.imageContainer}>
+              <img src={result.imageUrl} alt={result.title} />
+            </div>
+          </Stack>
+        ))}
       </div>
       <Panel
         headerText="See Query Vector"
@@ -196,7 +215,7 @@ export const ImagePage = () => {
           <>
             <p>Embedding model name:</p>
             <code className={styles.imageQueryVectorModel}>
-              Cognitive Services Version 4.0 preview
+              Cognitive Services - Computer Vision Florence v4.0 preview
             </code>
             <p>
               Query vector:{" "}

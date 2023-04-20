@@ -60,7 +60,7 @@ export const Layout = () => {
             </ul>
           </nav>
           <h4 className={styles.headerRightText}>
-            Azure OpenAI + Cognitive Search
+            Azure Cognitive Services + Cognitive Search
           </h4>
         </div>
       </header>
