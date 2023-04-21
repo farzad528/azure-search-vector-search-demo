@@ -16,7 +16,6 @@ import {
 } from "@fluentui/react-icons";
 import axios from "axios";
 import styles from "./ImagePage.module.css";
-import noResults from "../../assets/no-results.svg";
 
 interface SearchResult {
   "@search.score?": number;

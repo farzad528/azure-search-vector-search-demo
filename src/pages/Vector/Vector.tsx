@@ -21,9 +21,14 @@ import noResults from "../../assets/no-results.svg";
 interface SearchResult {
   "@search.score?": number;
   "@search.rerankerScore?": number;
+  "@search.captions": SearchCaptions[];
   content: string;
   title: string;
   id: string;
+}
+interface SearchCaptions {
+  text: string;
+  highlights: string;
 }
 
 const approaches: IChoiceGroupOption[] = [
@@ -57,7 +62,13 @@ async function generateTextQueryVector(queryVector: string) {
   return embeddings;
 }
 
-async function getTextSearchResults(vector: number[]) {
+async function getTextSearchResults(
+  vector: number[],
+  approach: string,
+  searchQuery: string,
+  useSemanticRanker: boolean,
+  useSemanticCaptions: boolean
+) {
   const payload: any = {
     vector: {
       value: vector,
@@ -66,6 +77,25 @@ async function getTextSearchResults(vector: number[]) {
     },
     select: "title,content",
   };
+
+  // Add search query for hybrid search if needed
+  if (approach === "hs") {
+    payload.search = searchQuery;
+  }
+
+  // Add queryType and queryLanguage if useSemanticRanker is true
+  if (useSemanticRanker) {
+    payload.queryType = "semantic";
+    payload.queryLanguage = "en-us";
+    payload.semanticConfiguration = "my-semantic-config";
+  }
+
+  // Add captions, highlightPreTag, and highlightPostTag if useSemanticCaptions is true
+  if (useSemanticCaptions) {
+    payload.captions = "extractive";
+    payload.highlightPreTag = "<b>";
+    payload.highlightPostTag = "</b>";
+  }
 
   const url = `${process.env.REACT_APP_SEARCH_SERVICE_ENDPOINT}/indexes/${process.env.REACT_APP_SEARCH_TEXT_INDEX_NAME}/docs/search?api-version=${process.env.REACT_APP_SEARCH_API_VERSION}`;
   const response = await axios.post(url, payload, {
@@ -85,11 +115,10 @@ export const Vector = () => {
   const [count, setCount] = useState<number>(0);
   const [searchResults, setSearchResults] = useState([]);
   const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
-  const [approach, setApproach] = useState<string>();
-  const [useSemanticRanker, setUseSemanticRanker] = useState<boolean>(true);
+  const [approach, setApproach] = useState<string>("vec");
+  const [useSemanticRanker, setUseSemanticRanker] = useState<boolean>(false);
   const [useSemanticCaptions, setUseSemanticCaptions] =
     useState<boolean>(false);
-  const [apiRequest, setApiRequest] = useState<boolean>(false);
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -97,7 +126,13 @@ export const Vector = () => {
       setLoading(true);
       const queryVector = await generateTextQueryVector(searchQuery);
       setTextQueryVector(queryVector);
-      const results = await getTextSearchResults(queryVector);
+      const results = await getTextSearchResults(
+        queryVector,
+        approach,
+        searchQuery,
+        useSemanticRanker,
+        useSemanticCaptions
+      );
       console.log(results.value);
       setCount(results["@odata.count"]);
       setSearchResults(results.value);
@@ -124,7 +159,7 @@ export const Vector = () => {
     _ev?: React.FormEvent<HTMLElement | HTMLInputElement>,
     option?: IChoiceGroupOption
   ) => {
-    setApproach(option?.key);
+    setApproach(option?.key ?? "vec");
   };
 
   const onUseSemanticRankerChange = (
@@ -172,11 +207,23 @@ export const Vector = () => {
           <Stack horizontal className={styles.searchResultCard}>
             <div key={result.id} className={styles.textContainer}>
               <p className={styles.searchResultCardTitle}> {result.title}</p>
-              <p>{result.content}</p>
+              <p
+                dangerouslySetInnerHTML={{
+                  __html:
+                    result["@search.captions"] &&
+                    result["@search.captions"][0].highlights
+                      ? result["@search.captions"][0].highlights
+                      : result["@search.captions"] &&
+                        result["@search.captions"][0].text
+                      ? result["@search.captions"][0].text
+                      : result.content,
+                }}
+              ></p>
             </div>
           </Stack>
         ))}
       </div>
+
       <Panel
         headerText="See Query Vector"
         isOpen={isConfigPanelOpen}
