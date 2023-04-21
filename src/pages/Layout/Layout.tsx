@@ -64,7 +64,10 @@ export const Layout = () => {
           </h4>
         </div>
       </header>
-      <Outlet />
+      <div className={styles.content}>
+        <Outlet />  
+      </div> 
+      <footer className={styles.footer}>Made with <span className={styles.heart}>❤️</span> by Azure Search Product Group</footer>
     </div>
   );
 };

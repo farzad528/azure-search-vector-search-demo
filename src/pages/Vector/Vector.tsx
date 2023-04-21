@@ -16,7 +16,6 @@ import {
 } from "@fluentui/react-icons";
 import axios from "axios";
 import styles from "./Vector.module.css";
-import noResults from "../../assets/no-results.svg";
 
 interface SearchResult {
   "@search.score?": number;
@@ -112,7 +111,6 @@ export const Vector = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [textQueryVector, setTextQueryVector] = useState([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [count, setCount] = useState<number>(0);
   const [searchResults, setSearchResults] = useState([]);
   const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
   const [approach, setApproach] = useState<string>("vec");
@@ -134,7 +132,6 @@ export const Vector = () => {
         useSemanticCaptions
       );
       console.log(results.value);
-      setCount(results["@odata.count"]);
       setSearchResults(results.value);
       setLoading(false);
     }
