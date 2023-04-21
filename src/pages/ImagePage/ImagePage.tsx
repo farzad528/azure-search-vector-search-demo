@@ -65,7 +65,7 @@ async function getImageSearchResults(vector: number[]) {
     select: "title,imageUrl",
   };
 
-  const url = `${process.env.REACT_APP_SEARCH_SERVICE_ENDPOINT}/indexes/${process.env.REACT_APP_INDEX_NAME}/docs/search?api-version=${process.env.REACT_APP_API_VERSION}`;
+  const url = `${process.env.REACT_APP_SEARCH_SERVICE_ENDPOINT}/indexes/${process.env.REACT_APP_SEARCH_IMAGE_INDEX_NAME}/docs/search?api-version=${process.env.REACT_APP_SEARCH_API_VERSION}`;
   const response = await axios.post(url, payload, {
     headers: {
       "Content-Type": "application/json",
@@ -80,14 +80,12 @@ export const ImagePage = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [imageQueryVector, setImageQueryVector] = useState([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [count, setCount] = useState<number>(0);
   const [searchResults, setSearchResults] = useState([]);
   const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
   const [approach, setApproach] = useState<string>();
   const [useSemanticRanker, setUseSemanticRanker] = useState<boolean>(true);
   const [useSemanticCaptions, setUseSemanticCaptions] =
     useState<boolean>(false);
-  const [apiRequest, setApiRequest] = useState<boolean>(false);
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -97,7 +95,6 @@ export const ImagePage = () => {
       setImageQueryVector(queryVector);
       const results = await getImageSearchResults(queryVector);
       console.log(results.value);
-      setCount(results["@odata.count"]);
       setSearchResults(results.value);
       setLoading(false);
     }

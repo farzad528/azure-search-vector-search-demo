@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Checkbox,
   ChoiceGroup,
@@ -9,31 +9,21 @@ import {
   Stack,
   TextField,
 } from "@fluentui/react";
-
-import styles from "./Vector.module.css";
 import {
   DismissCircle24Filled,
   Search24Regular,
   SearchInfo20Regular,
 } from "@fluentui/react-icons";
-import { getSearchResults } from "../../api/search";
+import axios from "axios";
+import styles from "./Vector.module.css";
 import noResults from "../../assets/no-results.svg";
-import generateQueryVector from "../../api/generateQueryVector";
 
 interface SearchResult {
-  "@search.score": number;
+  "@search.score?": number;
   "@search.rerankerScore?": number;
-  "@search.captions"?: SearchCaptions[];
-  "@search.highlights": any;
-  url: string;
   content: string;
   title: string;
   id: string;
-}
-
-interface SearchCaptions {
-  text: string;
-  highlights: string;
 }
 
 const approaches: IChoiceGroupOption[] = [
@@ -42,9 +32,55 @@ const approaches: IChoiceGroupOption[] = [
   { key: "hs", text: "Vectors + Text (Hybrid Search)" },
 ];
 
+const apiUrl = process.env.REACT_APP_OPENAI_SERVICE_ENDPOINT;
+const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+const deploymentName = process.env.REACT_APP_OPENAI_DEPLOYMENT_NAME;
+const apiVersion = process.env.REACT_APP_OPENAI_API_VERSION;
+
+async function generateTextQueryVector(queryVector: string) {
+  const requestData = {
+    input: queryVector,
+  };
+  const response = await axios.post(
+    `${apiUrl}/openai/deployments/${deploymentName}/embeddings?api-version=${apiVersion}`,
+
+    requestData,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": apiKey,
+      },
+    }
+  );
+  const embeddings = response.data.data[0].embedding;
+  console.log(embeddings);
+  return embeddings;
+}
+
+async function getTextSearchResults(vector: number[]) {
+  const payload: any = {
+    vector: {
+      value: vector,
+      fields: "contentVector",
+      k: 10,
+    },
+    select: "title,content",
+  };
+
+  const url = `${process.env.REACT_APP_SEARCH_SERVICE_ENDPOINT}/indexes/${process.env.REACT_APP_SEARCH_TEXT_INDEX_NAME}/docs/search?api-version=${process.env.REACT_APP_SEARCH_API_VERSION}`;
+  const response = await axios.post(url, payload, {
+    headers: {
+      "Content-Type": "application/json",
+      "api-key": `${process.env.REACT_APP_SEARCH_SERVICE_ADMIN_KEY ?? ""}`,
+    },
+  });
+
+  return response.data;
+}
+
 export const Vector = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [queryVector, setQueryVector] = useState([]);
+  const [textQueryVector, setTextQueryVector] = useState([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [count, setCount] = useState<number>(0);
   const [searchResults, setSearchResults] = useState([]);
@@ -59,12 +95,10 @@ export const Vector = () => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       setLoading(true);
-      // Pass searchQuery value to generateQueryVector function and await the result
-      const queryVector = await generateQueryVector(searchQuery);
-      setQueryVector(queryVector);
-      setApiRequest(true);
-      const results = await getSearchResults(searchQuery);
-      console.log(results);
+      const queryVector = await generateTextQueryVector(searchQuery);
+      setTextQueryVector(queryVector);
+      const results = await getTextSearchResults(queryVector);
+      console.log(results.value);
       setCount(results["@odata.count"]);
       setSearchResults(results.value);
       setLoading(false);
@@ -117,7 +151,7 @@ export const Vector = () => {
             resizable={false}
             borderless
             value={searchQuery}
-            placeholder="Type something here (e.g. vacations by bodies of water)"
+            placeholder="Type something here (e.g. networking services)"
             onChange={handleOnChange}
             onKeyDown={handleKeyDown}
           />
@@ -133,79 +167,15 @@ export const Vector = () => {
       <div className={styles.spinner}>
         {loading && <Spinner label="Getting results" />}
       </div>
-      {!loading && count === 0 && apiRequest ? (
-        <div className={styles.noResultsFound}>
-          <img alt="no results" src={noResults} />
-          <p>Bummer. No results found.</p>
-          <p>Try rephrasing your search</p>
-        </div>
-      ) : count > 0 && apiRequest ? (
-        <div className={styles.resultCount}>
-          Showing {count} result
-          {searchResults.length === 1 ? "" : "s"}
-        </div>
-      ) : (
-        <p>Type something to do a vector search over text!</p>
-      )}
-
       <div className={styles.searchResultsContainer}>
-        {searchResults.map((searchResult: SearchResult) => {
-          const score = searchResult["@search.score"];
-          const scoreBgColor =
-            score >= 10 && score <= 50
-              ? "#a9d18e"
-              : score >= 5 && score < 10
-              ? "#f5b85a"
-              : "#f29c8b";
-          const scoreTextColor =
-            score >= 10 && score <= 50
-              ? "#3c6e47"
-              : score >= 5 && score < 10
-              ? "#9c6d2f"
-              : "#6f2e1c";
-
-          return (
-            <Stack horizontal className={styles.searchResultCard}>
-              <div key={searchResult.id} className="">
-                <p className={styles.searchResultCardTitle}>
-                  {searchResult.title}
-                </p>
-                <a
-                  href={searchResult.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <p className={styles.searchResultCardUrl}>
-                    {searchResult.url}
-                  </p>
-                </a>
-
-                <p
-                  className={styles.searchResultCardCaption}
-                  dangerouslySetInnerHTML={{
-                    __html: searchResult["@search.highlights"].content[0],
-                  }}
-                ></p>
-              </div>
-              <div className={styles.searchResultCardSimilarityScore}>
-                <span>
-                  similarity score:{" "}
-                  <p
-                    style={{
-                      backgroundColor: scoreBgColor,
-                      color: scoreTextColor,
-                      padding: "0.25rem",
-                      borderRadius: "0.5rem",
-                      textAlign: "center",
-                    }}
-                  >
-                    {searchResult["@search.score"]}
-                  </p>{" "}
-                </span>
-              </div>
-            </Stack>
-          );
-        })}
+        {searchResults.map((result: SearchResult) => (
+          <Stack horizontal className={styles.searchResultCard}>
+            <div key={result.id} className={styles.textContainer}>
+              <p className={styles.searchResultCardTitle}> {result.title}</p>
+              <p>{result.content}</p>
+            </div>
+          </Stack>
+        ))}
       </div>
       <Panel
         headerText="See Query Vector"
@@ -244,13 +214,19 @@ export const Vector = () => {
           </>
         )}
 
-        {queryVector && (
-          <p>
-            Query vector:{" "}
-            <code className={styles.queryVector}>
-              {JSON.stringify(queryVector)}
+        {textQueryVector && (
+          <>
+            <p>Embedding model name:</p>
+            <code className={styles.textQueryVectorModel}>
+              OpenAI text-embedding-ada-002
             </code>
-          </p>
+            <p>
+              Query vector:{" "}
+              <code className={styles.textQueryVector}>
+                {JSON.stringify(textQueryVector)}
+              </code>
+            </p>
+          </>
         )}
       </Panel>
     </div>
