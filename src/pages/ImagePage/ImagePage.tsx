@@ -59,7 +59,7 @@ async function getImageSearchResults(vector: number[]) {
     vector: {
       value: vector,
       fields: "imageVector",
-      k: 10,
+      k: 12,
     },
     select: "title,imageUrl",
   };

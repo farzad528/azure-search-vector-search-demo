@@ -37,8 +37,11 @@
 }
 
 .searchResultsContainer {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid; /* Change this line */
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(20rem, 1fr)
+  ); /* Add this line */
   margin-top: 1rem;
   gap: 2rem;
 }
@@ -56,34 +59,37 @@
   box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.14), 0px 0px 2px rgba(0, 0, 0, 0.12);
   padding: 10px;
   height: 15rem;
-  width: 20rem;
+  flex: 1;
   background: white;
   display: flex;
 }
 
-/* For extra-wide screens (e.g., large monitors) */
-@media screen and (min-width: 1440px) {
-  .imageSearchResultCard {
-    height: 20rem;
-    width: 30rem;
-  }
-}
+/* For extra-wide screens (e.g., large monitors) */  
+@media screen and (min-width: 1440px) {  
+  .searchResultsContainer {  
+    grid-template-columns: repeat(4, minmax(20rem, 1fr));
+  }  
+}  
+ 
+
 
 /* For medium-sized screens (e.g., tablets) */
 @media screen and (max-width: 1024px) {
-  .imageSearchResultCard {
-    height: 15rem;
-    width: 20rem;
+  .searchResultsContainer {
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(20rem, 1fr)
+    ); 
   }
 }
 
 /* For small-sized screens (e.g., mobile devices) */
 @media screen and (max-width: 768px) {
-  .imageSearchResultCard {
-    height: 10rem;
-    width: 15rem;
-    flex-direction: column;
-    align-items: center;
+  .searchResultsContainer {
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(15rem, 1fr)
+    ); 
   }
 }
 
