@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   Checkbox,
   ChoiceGroup,
@@ -12,7 +12,7 @@ import {
 import {
   DismissCircle24Filled,
   Search24Regular,
-  SearchInfo20Regular,
+  Settings20Regular,
 } from "@fluentui/react-icons";
 import axios from "axios";
 import styles from "./Vector.module.css";
@@ -30,44 +30,33 @@ interface SearchCaptions {
   highlights: string;
 }
 
-const approaches: IChoiceGroupOption[] = [
-  { key: "vec", text: "Vectors Only" },
-  { key: "vecf", text: "Vectors with Filter" },
-  { key: "hs", text: "Vectors + Text (Hybrid Search)" },
-];
-
-const apiUrl = process.env.REACT_APP_OPENAI_SERVICE_ENDPOINT;
-const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
-const deploymentName = process.env.REACT_APP_OPENAI_DEPLOYMENT_NAME;
-const apiVersion = process.env.REACT_APP_OPENAI_API_VERSION;
-
-async function generateTextQueryVector(queryVector: string) {
+const generateTextQueryVector = async (queryVector: string) => {
   const requestData = {
     input: queryVector,
   };
-  const response = await axios.post(
-    `${apiUrl}/openai/deployments/${deploymentName}/embeddings?api-version=${apiVersion}`,
 
+  const response = await axios.post(
+    `${process.env.REACT_APP_OPENAI_SERVICE_ENDPOINT}/openai/deployments/${process.env.REACT_APP_OPENAI_DEPLOYMENT_NAME}/embeddings?api-version=${process.env.REACT_APP_OPENAI_API_VERSION}`,
     requestData,
     {
       headers: {
         "Content-Type": "application/json",
-        "api-key": apiKey,
+        "api-key": process.env.REACT_APP_OPENAI_API_KEY,
       },
     }
   );
-  const embeddings = response.data.data[0].embedding;
-  console.log(embeddings);
-  return embeddings;
-}
 
-async function getTextSearchResults(
+  const embeddings = response.data.data[0].embedding;
+  return embeddings;
+};
+
+const getTextSearchResults = async (
   vector: number[],
   approach: string,
   searchQuery: string,
   useSemanticRanker: boolean,
   useSemanticCaptions: boolean
-) {
+) => {
   const payload: any = {
     vector: {
       value: vector,
@@ -77,19 +66,16 @@ async function getTextSearchResults(
     select: "title,content",
   };
 
-  // Add search query for hybrid search if needed
   if (approach === "hs") {
     payload.search = searchQuery;
   }
 
-  // Add queryType and queryLanguage if useSemanticRanker is true
   if (useSemanticRanker) {
     payload.queryType = "semantic";
     payload.queryLanguage = "en-us";
     payload.semanticConfiguration = "my-semantic-config";
   }
 
-  // Add captions, highlightPreTag, and highlightPostTag if useSemanticCaptions is true
   if (useSemanticCaptions) {
     payload.captions = "extractive";
     payload.highlightPreTag = "<b>";
@@ -97,6 +83,7 @@ async function getTextSearchResults(
   }
 
   const url = `${process.env.REACT_APP_SEARCH_SERVICE_ENDPOINT}/indexes/${process.env.REACT_APP_SEARCH_TEXT_INDEX_NAME}/docs/search?api-version=${process.env.REACT_APP_SEARCH_API_VERSION}`;
+
   const response = await axios.post(url, payload, {
     headers: {
       "Content-Type": "application/json",
@@ -105,73 +92,93 @@ async function getTextSearchResults(
   });
 
   return response.data;
-}
+};
 
-export const Vector = () => {
+const Vector: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [textQueryVector, setTextQueryVector] = useState([]);
+  const [textQueryVector, setTextQueryVector] = useState<number[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
   const [approach, setApproach] = useState<string>("vec");
   const [useSemanticRanker, setUseSemanticRanker] = useState<boolean>(false);
   const [useSemanticCaptions, setUseSemanticCaptions] =
     useState<boolean>(false);
 
-  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      setLoading(true);
-      const queryVector = await generateTextQueryVector(searchQuery);
-      setTextQueryVector(queryVector);
-      const results = await getTextSearchResults(
-        queryVector,
-        approach,
-        searchQuery,
-        useSemanticRanker,
-        useSemanticCaptions
-      );
-      console.log(results.value);
-      setSearchResults(results.value);
-      setLoading(false);
-    }
-  };
+  const approaches = useMemo<IChoiceGroupOption[]>(
+    () => [
+      { key: "vec", text: "Vectors Only" },
+      { key: "vecf", text: "Vectors with Filter" },
+      { key: "hs", text: "Vectors + Text (Hybrid Search)" },
+    ],
+    []
+  );
 
-  const handleClear = () => {
-    setSearchQuery("");
-  };
+  const handleOnKeyDown = useCallback(
+    async (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        if (searchQuery.length === 0) {
+          setSearchResults([]);
+          return;
+        }
 
-  const handleOnChange = (
-    _ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>,
-    newValue?: string
-  ) => {
-    if (!newValue) {
-      setSearchQuery("");
-    } else if (newValue.length <= 1000) {
-      setSearchQuery(newValue);
-    }
-  };
+        setLoading(true);
+        const queryVector = await generateTextQueryVector(searchQuery);
+        setTextQueryVector(queryVector);
+        const results = await getTextSearchResults(
+          queryVector,
+          approach,
+          searchQuery,
+          useSemanticRanker,
+          useSemanticCaptions
+        );
+        setSearchResults(results.value);
+        setLoading(false);
+      }
+    },
+    [searchQuery, approach, useSemanticRanker, useSemanticCaptions]
+  );
 
-  const onApproachChange = (
-    _ev?: React.FormEvent<HTMLElement | HTMLInputElement>,
-    option?: IChoiceGroupOption
-  ) => {
-    setApproach(option?.key ?? "vec");
-  };
+  const handleOnChange = useCallback(
+    (
+      _ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>,
+      newValue?: string
+    ) => {
+      setSearchQuery(newValue ?? "");
+    },
+    []
+  );
 
-  const onUseSemanticRankerChange = (
-    _ev?: React.FormEvent<HTMLElement | HTMLInputElement>,
-    checked?: boolean
-  ) => {
-    setUseSemanticRanker(!!checked);
-  };
+  const onApproachChange = useCallback(
+    (
+      _ev?: React.FormEvent<HTMLElement | HTMLInputElement>,
+      option?: IChoiceGroupOption
+    ) => {
+      setApproach(option?.key ?? "vec");
+    },
+    []
+  );
 
-  const onUseSemanticCaptionsChange = (
-    _ev?: React.FormEvent<HTMLElement | HTMLInputElement>,
-    checked?: boolean
-  ) => {
-    setUseSemanticCaptions(!!checked);
-  };
+  const onUseSemanticRankerChange = useCallback(
+    (
+      _ev?: React.FormEvent<HTMLElement | HTMLInputElement>,
+      checked?: boolean
+    ) => {
+      setUseSemanticRanker(!!checked);
+    },
+    []
+  );
+
+  const onUseSemanticCaptionsChange = useCallback(
+    (
+      _ev?: React.FormEvent<HTMLElement | HTMLInputElement>,
+      checked?: boolean
+    ) => {
+      setUseSemanticCaptions(!!checked);
+    },
+    []
+  );
 
   return (
     <div className={styles.vectorContainer}>
@@ -185,14 +192,14 @@ export const Vector = () => {
             value={searchQuery}
             placeholder="Type something here (e.g. networking services)"
             onChange={handleOnChange}
-            onKeyDown={handleKeyDown}
+            onKeyDown={handleOnKeyDown}
           />
-          <SearchInfo20Regular
+          <Settings20Regular
             className={styles.settingsButton}
             onClick={() => setIsConfigPanelOpen(!isConfigPanelOpen)}
           />
           {searchQuery.length > 0 && (
-            <DismissCircle24Filled onClick={handleClear} />
+            <DismissCircle24Filled onClick={() => setSearchQuery("")} />
           )}
         </Stack>
       </div>
@@ -241,7 +248,7 @@ export const Vector = () => {
           onChange={onApproachChange}
         />
         {approach === "hs" && (
-          <>
+          <React.Fragment>
             <Checkbox
               className={styles.vectorSettingsSeparator}
               checked={useSemanticRanker}
@@ -255,24 +262,24 @@ export const Vector = () => {
               onChange={onUseSemanticCaptionsChange}
               disabled={!useSemanticRanker}
             />
-          </>
+          </React.Fragment>
         )}
 
         {textQueryVector && (
-          <>
+          <React.Fragment>
             <p>Embedding model name:</p>
             <code className={styles.textQueryVectorModel}>
-              OpenAI text-embedding-ada-002
+              openai text-embedding-ada-002
             </code>
-            <p>
-              Query vector:{" "}
-              <code className={styles.textQueryVector}>
-                {JSON.stringify(textQueryVector)}
-              </code>
-            </p>
-          </>
+            <p>Text query vector:</p>
+            <code className={styles.textQueryVector}>
+              [{textQueryVector.join(", ")}]
+            </code>
+          </React.Fragment>
         )}
       </Panel>
     </div>
   );
 };
+
+export default Vector;

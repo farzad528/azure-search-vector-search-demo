@@ -1,19 +1,6 @@
-import React, { useState } from "react";
-import {
-  Checkbox,
-  ChoiceGroup,
-  DefaultButton,
-  IChoiceGroupOption,
-  Panel,
-  Spinner,
-  Stack,
-  TextField,
-} from "@fluentui/react";
-import {
-  DismissCircle24Filled,
-  Search24Regular,
-  SearchInfo20Regular,
-} from "@fluentui/react-icons";
+import React, { useState, useCallback } from "react";
+import { Spinner, Stack, TextField } from "@fluentui/react";
+import { DismissCircle24Filled, Search24Regular } from "@fluentui/react-icons";
 import axios from "axios";
 import styles from "./ImagePage.module.css";
 
@@ -25,36 +12,26 @@ interface SearchResult {
   id: string;
 }
 
-const approaches: IChoiceGroupOption[] = [
-  { key: "vec", text: "Vectors Only" },
-  { key: "vecf", text: "Vectors with Filter" },
-  { key: "hs", text: "Vectors + Text (Hybrid Search)" },
-];
-
-const apiUrl = process.env.REACT_APP_COGNITIVE_SERVICES_ENDPOINT;
-const apiKey = process.env.REACT_APP_COGNITIVE_SERVICES_API_KEY;
-const apiVersion = process.env.REACT_APP_COGNITIVE_SERVICES_API_VERSION;
-
-async function generateImageQueryVector(queryVector: string) {
+const generateImageQueryVector = async (queryVector: string) => {
   const requestData = {
     text: queryVector,
   };
   const response = await axios.post(
-    `${apiUrl}/computervision/retrieval:vectorizeText?api-version=${apiVersion}`,
+    `${process.env.REACT_APP_COGNITIVE_SERVICES_ENDPOINT}/computervision/retrieval:vectorizeText?api-version=${process.env.REACT_APP_COGNITIVE_SERVICES_API_VERSION}`,
     requestData,
     {
       headers: {
         "Content-Type": "application/json",
-        "Ocp-Apim-Subscription-Key": apiKey,
+        "Ocp-Apim-Subscription-Key":
+          process.env.REACT_APP_COGNITIVE_SERVICES_API_KEY,
       },
     }
   );
   const embeddings = response.data.vector;
-  console.log(embeddings);
   return embeddings;
-}
+};
 
-async function getImageSearchResults(vector: number[]) {
+const getImageSearchResults = async (vector: number[]) => {
   const payload: any = {
     vector: {
       value: vector,
@@ -73,67 +50,41 @@ async function getImageSearchResults(vector: number[]) {
   });
 
   return response.data;
-}
+};
 
 export const ImagePage = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [imageQueryVector, setImageQueryVector] = useState([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [searchResults, setSearchResults] = useState([]);
-  const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
-  const [approach, setApproach] = useState<string>();
-  const [useSemanticRanker, setUseSemanticRanker] = useState<boolean>(true);
-  const [useSemanticCaptions, setUseSemanticCaptions] =
-    useState<boolean>(false);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
-  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      setLoading(true);
-      const queryVector = await generateImageQueryVector(searchQuery);
-      setImageQueryVector(queryVector);
-      const results = await getImageSearchResults(queryVector);
-      console.log(results.value);
-      setSearchResults(results.value);
-      setLoading(false);
-    }
-  };
+  const handleOnKeyDown = useCallback(
+    async (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        if (searchQuery.length === 0) {
+          setSearchResults([]);
+          return;
+        }
 
-  const handleClear = () => {
-    setSearchQuery("");
-  };
+        setLoading(true);
+        const queryVector = await generateImageQueryVector(searchQuery);
+        const results = await getImageSearchResults(queryVector);
+        setSearchResults(results.value);
+        setLoading(false);
+      }
+    },
+    [searchQuery]
+  );
 
-  const handleOnChange = (
-    _ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>,
-    newValue?: string
-  ) => {
-    if (!newValue) {
-      setSearchQuery("");
-    } else if (newValue.length <= 1000) {
-      setSearchQuery(newValue);
-    }
-  };
-
-  const onApproachChange = (
-    _ev?: React.FormEvent<HTMLElement | HTMLInputElement>,
-    option?: IChoiceGroupOption
-  ) => {
-    setApproach(option?.key);
-  };
-
-  const onUseSemanticRankerChange = (
-    _ev?: React.FormEvent<HTMLElement | HTMLInputElement>,
-    checked?: boolean
-  ) => {
-    setUseSemanticRanker(!!checked);
-  };
-
-  const onUseSemanticCaptionsChange = (
-    _ev?: React.FormEvent<HTMLElement | HTMLInputElement>,
-    checked?: boolean
-  ) => {
-    setUseSemanticCaptions(!!checked);
-  };
+  const handleOnChange = useCallback(
+    (
+      _ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>,
+      newValue?: string
+    ) => {
+      setSearchQuery(newValue ?? "");
+    },
+    []
+  );
 
   return (
     <div className={styles.vectorContainer}>
@@ -147,14 +98,10 @@ export const ImagePage = () => {
             value={searchQuery}
             placeholder="Type something here (e.g. brown suede shoes)"
             onChange={handleOnChange}
-            onKeyDown={handleKeyDown}
-          />
-          <SearchInfo20Regular
-            className={styles.settingsButton}
-            onClick={() => setIsConfigPanelOpen(!isConfigPanelOpen)}
+            onKeyDown={handleOnKeyDown}
           />
           {searchQuery.length > 0 && (
-            <DismissCircle24Filled onClick={handleClear} />
+            <DismissCircle24Filled onClick={() => setSearchQuery("")} />
           )}
         </Stack>
       </div>
@@ -170,58 +117,6 @@ export const ImagePage = () => {
           </Stack>
         ))}
       </div>
-      <Panel
-        headerText="See Query Vector"
-        isOpen={isConfigPanelOpen}
-        isBlocking={false}
-        onDismiss={() => setIsConfigPanelOpen(false)}
-        closeButtonAriaLabel="Close"
-        onRenderFooterContent={() => (
-          <DefaultButton onClick={() => setIsConfigPanelOpen(false)}>
-            Close
-          </DefaultButton>
-        )}
-        isFooterAtBottom={true}
-      >
-        <ChoiceGroup
-          label="Approach"
-          options={approaches}
-          defaultSelectedKey="vec"
-          onChange={onApproachChange}
-        />
-        {approach === "hs" && (
-          <>
-            <Checkbox
-              className={styles.vectorSettingsSeparator}
-              checked={useSemanticRanker}
-              label="Use semantic ranker for retrieval"
-              onChange={onUseSemanticRankerChange}
-            />
-            <Checkbox
-              className={styles.vectorSettingsSeparator}
-              checked={useSemanticCaptions}
-              label="Use semantic captions"
-              onChange={onUseSemanticCaptionsChange}
-              disabled={!useSemanticRanker}
-            />
-          </>
-        )}
-
-        {imageQueryVector && (
-          <>
-            <p>Embedding model name:</p>
-            <code className={styles.imageQueryVectorModel}>
-              Cognitive Services - Computer Vision Florence v4.0 preview
-            </code>
-            <p>
-              Query vector:{" "}
-              <code className={styles.imageQueryVector}>
-                {JSON.stringify(imageQueryVector)}
-              </code>
-            </p>
-          </>
-        )}
-      </Panel>
     </div>
   );
 };

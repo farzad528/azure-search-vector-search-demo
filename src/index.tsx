@@ -5,7 +5,7 @@ import { initializeIcons } from "@fluentui/react";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./pages/Layout/Layout";
 import { ImagePage } from "./pages/ImagePage/ImagePage";
-import { Vector } from "./pages/Vector/Vector";
+import Vector from "./pages/Vector/Vector";
 
 initializeIcons();
 
