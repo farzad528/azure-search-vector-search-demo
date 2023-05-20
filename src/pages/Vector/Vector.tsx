@@ -254,7 +254,7 @@ const Vector: React.FC = () => {
         isFooterAtBottom={true}
       >
         <ChoiceGroup
-          label="Approach"
+          label="Retreival mode"
           options={approaches}
           defaultSelectedKey="vec"
           onChange={onApproachChange}
