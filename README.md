@@ -3,7 +3,8 @@
 This repository contains a React application that showcases a Vector Search Demo using Azure Cognitive Search. The demo leverages OpenAI for text embeddings and Azure Cognitive Services Florence Vision API for image embeddings. 
 
 You can find a live demo [here](https://gentle-desert-086f73910.3.azurestaticapps.net/#/)
-![Screenshot](public/Vector Search Demo.gif "video demo")
+
+![Screenshot](/Vector%20Search%20Demo.gif "video demo")
 
 ## Features
 
