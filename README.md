@@ -4,7 +4,7 @@ This repository contains a React application that showcases a Vector Search Demo
 
 You can find a live demo [here](https://gentle-desert-086f73910.3.azurestaticapps.net/#/)
 
-![Vector Search Video](https://github.com/farzad528/azure-search-vector-search-demo/blob/main/public/VectorSearchDemo.mp4?raw=true)
+![Vector Search Video](https://github.com/farzad528/azure-search-vector-search-demo/blob/main/public/VectorSearchDemo.gif?raw=true)
 
 ## Features
 
