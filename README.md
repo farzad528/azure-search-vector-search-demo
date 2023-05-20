@@ -1,6 +1,6 @@
 # Vector Search Demo with Azure Cognitive Search
 
-This repository contains a React application that showcases a Vector Search Demo using Azure Cognitive Search. The demo leverages OpenAI for text embeddings and Azure Cognitive Services Florence Vision API for image embeddings. 
+This repository contains a React application that showcases a Vector Search Demo using Azure Cognitive Search. The demo leverages OpenAI for text embeddings and Azure Cognitive Services Florence Vision API for image embeddings.
 
 You can find a live demo [here](https://gentle-desert-086f73910.3.azurestaticapps.net/#/) or at [aks.ms/VectorSearchDemo](https://gentle-desert-086f73910.3.azurestaticapps.net/#/)
 
@@ -23,6 +23,7 @@ To run this demo locally, you will need the following:
 - Access to Azure Cognitive Services Florence Vision API for generating image embeddings.
 
 ### Signing up Vector Search Private Preview in Azure Cognitive Search
+
 Azure Cognitive Search supports searching using pure vectors, pure text, or in hybrid mode where both are combined. For the vector-based cases, you'll need to sign up for Vector Search Private Preview. To sign up, please fill in this form: https://aka.ms/VectorSearchSignUp
 
 ## Setup and Local Development
@@ -30,6 +31,7 @@ Azure Cognitive Search supports searching using pure vectors, pure text, or in h
 1. Clone this repository to your local machine.
 
 2. Install the dependencies by running the following command in the project directory:
+
 ```
 npm install
 ```
@@ -53,12 +55,15 @@ REACT_APP_COGNITIVE_SERVICES_API_VERSION=2023-02-01-preview
 ```
 
 4. Start the React development server by running the following command:
+
 ```
 npm start
 ```
+
 This will start the application on http://localhost:3000.
 
 ## Usage
+
 1. Open the application in your web browser.
 
 2. The Vector Search Demo allows you to search for text queries by entering them in the search bar and pressing Enter. The application will generate text embeddings using OpenAI and perform vector searches on the data stored in Azure Cognitive Search.
@@ -66,15 +71,18 @@ This will start the application on http://localhost:3000.
 3. The search results will be displayed as cards. Feel free to click on the settings icon to explore the different query approaches such as Hybrid Search and Hybrid Search with Semantic Ranking, Captions, and Highlights powered by Microsoft Bing. Note that you will need to enroll in a Semantic Plan in your Azure Cognitive Search service to use this feature. See [Semantic search](https://learn.microsoft.com/azure/search/semantic-search-overview).
 
 ## Deploying to Azure
+
 To deploy this application to Azure, you can follow the steps outlined in the official [React deployment documentation](https://create-react-app.dev/docs/deployment/) to deploy it to services like Azure Static Web Apps, Azure App Service, or Azure Storage.
 
 ## Conclusion
+
 I hope you find this repository useful for querying your multilingual index with semantic search. Feel free to explore and customize the code to meet your specific requirements.
 If you have any questions or suggestions, please feel free to open an issue and I'll be happy to help.
 
 Happy searching!
 
 ## References
-[Azure Cognitive Search Documentation](https://learn.microsoft.com/azure/search/)
-[Azure OpenAI Documentation](https://learn.microsoft.com/azure/cognitive-services/openai/)
-[Azure Cognitive Services Computer Vision Documentation](https://learn.microsoft.com/azure/cognitive-services/computer-vision/)
+
+- [Azure Cognitive Search Documentation](https://learn.microsoft.com/azure/search/)
+- [Azure OpenAI Documentation](https://learn.microsoft.com/azure/cognitive-services/openai/)
+- [Azure Cognitive Services Computer Vision Documentation](https://learn.microsoft.com/azure/cognitive-services/computer-vision/)
