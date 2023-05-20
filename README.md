@@ -2,7 +2,7 @@
 
 This repository contains a React application that showcases a Vector Search Demo using Azure Cognitive Search. The demo leverages OpenAI for text embeddings and Azure Cognitive Services Florence Vision API for image embeddings. 
 
-You can find a live demo [here](https://gentle-desert-086f73910.3.azurestaticapps.net/#/)
+You can find a live demo [here](https://gentle-desert-086f73910.3.azurestaticapps.net/#/) or at [aks.ms/VectorSearchDemo](https://gentle-desert-086f73910.3.azurestaticapps.net/#/)
 
 ![Vector Search Video](https://github.com/farzad528/azure-search-vector-search-demo/blob/main/public/VectorSearchDemo.gif?raw=true)
 
@@ -21,6 +21,9 @@ To run this demo locally, you will need the following:
 - An Azure subscription with access to Azure Cognitive Search and Azure Cognitive Services.
 - Access to Azure OpenAI for generating text embeddings.
 - Access to Azure Cognitive Services Florence Vision API for generating image embeddings.
+
+### Signing up Vector Search Private Preview in Azure Cognitive Search
+Azure Cognitive Search supports searching using pure vectors, pure text, or in hybrid mode where both are combined. For the vector-based cases, you'll need to sign up for Vector Search Private Preview. To sign up, please fill in this form: https://aka.ms/VectorSearchSignUp
 
 ## Setup and Local Development
 
