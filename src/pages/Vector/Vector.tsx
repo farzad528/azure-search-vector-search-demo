@@ -55,7 +55,8 @@ const getTextSearchResults = async (
   approach: string,
   searchQuery: string,
   useSemanticRanker: boolean,
-  useSemanticCaptions: boolean
+  useSemanticCaptions: boolean,
+  filterText: string
 ) => {
   const payload: any = {
     vector: {
@@ -68,6 +69,10 @@ const getTextSearchResults = async (
 
   if (approach === "hs") {
     payload.search = searchQuery;
+  }
+
+  if (approach === "vecf") {
+    payload.filter = filterText;
   }
 
   if (useSemanticRanker) {
@@ -101,6 +106,7 @@ const Vector: React.FC = () => {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
   const [approach, setApproach] = useState<string>("vec");
+  const [filterText, setFilterText] = useState<string>("");
   const [useSemanticRanker, setUseSemanticRanker] = useState<boolean>(false);
   const [useSemanticCaptions, setUseSemanticCaptions] =
     useState<boolean>(false);
@@ -131,13 +137,14 @@ const Vector: React.FC = () => {
           approach,
           searchQuery,
           useSemanticRanker,
-          useSemanticCaptions
+          useSemanticCaptions,
+          filterText
         );
         setSearchResults(results.value);
         setLoading(false);
       }
     },
-    [searchQuery, approach, useSemanticRanker, useSemanticCaptions]
+    [searchQuery, approach, useSemanticRanker, useSemanticCaptions, filterText]
   );
 
   const handleOnChange = useCallback(
@@ -247,6 +254,14 @@ const Vector: React.FC = () => {
           defaultSelectedKey="vec"
           onChange={onApproachChange}
         />
+        {approach === "vecf" && (
+          <TextField
+            label="Filter"
+            value={filterText}
+            onChange={(_ev, newValue) => setFilterText(newValue ?? "")}
+            placeholder="(e.g. category eq 'Databases'"
+          />
+        )}
         {approach === "hs" && (
           <React.Fragment>
             <Checkbox

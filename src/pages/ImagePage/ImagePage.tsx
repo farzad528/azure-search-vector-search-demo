@@ -36,7 +36,7 @@ const getImageSearchResults = async (vector: number[]) => {
     vector: {
       value: vector,
       fields: "imageVector",
-      k: 12,
+      k: 3,
     },
     select: "title,imageUrl",
   };
@@ -96,7 +96,7 @@ export const ImagePage = () => {
             resizable={false}
             borderless
             value={searchQuery}
-            placeholder="Type something here (e.g. brown suede shoes)"
+            placeholder="Type something here (e.g. fancy shoes)"
             onChange={handleOnChange}
             onKeyDown={handleOnKeyDown}
           />
