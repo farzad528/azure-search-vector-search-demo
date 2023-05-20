@@ -1,46 +1,73 @@
-# Getting Started with Create React App
+# Vector Search Demo with Azure Cognitive Search
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This repository contains a React application that showcases a Vector Search Demo using Azure Cognitive Search. The demo leverages OpenAI for text embeddings and Azure Cognitive Services Florence Vision API for image embeddings. 
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- Generate text embeddings using OpenAI and insert them into a vector store in Azure Cognitive Search.
+- Perform vector search queries on text data, including vector searches with metadata filtering and hybrid (text + vectors) search.
+- Generate image embeddings using Azure Cognitive Services Florence Vision API.
+- Perform vector searches from text to images and image to images (coming soon)
 
-### `npm start`
+## Prerequisites
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+To run this demo locally, you will need the following:
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- Node.js and npm installed on your machine.
+- An Azure subscription with access to Azure Cognitive Search and Azure Cognitive Services.
+- Access to Azure OpenAI for generating text embeddings.
+- Access to Azure Cognitive Services Florence Vision API for generating image embeddings.
 
-### `npm test`
+## Setup and Local Development
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. Clone this repository to your local machine.
 
-### `npm run build`
+2. Install the dependencies by running the following command in the project directory:
+```
+npm install
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+3. Create a `.env` file in the project directory and include the required environment variables (replace placeholders with your own values):
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```plaintext
+REACT_APP_OPENAI_SERVICE_ENDPOINT=xxx
+REACT_APP_OPENAI_DEPLOYMENT_NAME=xxx
+REACT_APP_OPENAI_API_VERSION=2023-03-15-preview
+REACT_APP_OPENAI_API_KEY=xxx
+REACT_APP_SEARCH_SERVICE_ENDPOINT=xxx
+REACT_APP_SEARCH_SERVICE_NAME=xxx
+REACT_APP_SEARCH_SERVICE_ADMIN_KEY=xxx
+REACT_APP_SEARCH_IMAGE_INDEX_NAME=xxx
+REACT_APP_SEARCH_TEXT_INDEX_NAME=xxx
+REACT_APP_SEARCH_API_VERSION=2023-07-01-Preview
+REACT_APP_COGNITIVE_SERVICES_API_KEY=xxx
+REACT_APP_COGNITIVE_SERVICES_ENDPOINT=xxx
+REACT_APP_COGNITIVE_SERVICES_API_VERSION=2023-02-01-preview
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+4. Start the React development server by running the following command:
+```
+npm start
+```
+This will start the application on http://localhost:3000.
 
-### `npm run eject`
+## Usage
+1. Open the application in your web browser.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+2. The Vector Search Demo allows you to search for text queries by entering them in the search bar and pressing Enter. The application will generate text embeddings using OpenAI and perform vector searches on the data stored in Azure Cognitive Search.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+3. The search results will be displayed as cards. Feel free to click on the settings icon to explore the different query approaches such as Hybrid Search and Hybrid Search with Semantic Ranking, Captions, and Highlights powered by Microsoft Bing. Note that you will need to enroll in a Semantic Plan in your Azure Cognitive Search service to use this feature. See [Semantic search](https://learn.microsoft.com/azure/search/semantic-search-overview).
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## Deploying to Azure
+To deploy this application to Azure, you can follow the steps outlined in the official [React deployment documentation](https://create-react-app.dev/docs/deployment/) to deploy it to services like Azure Static Web Apps, Azure App Service, or Azure Storage.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## Conclusion
+I hope you find this repository useful for querying your multilingual index with semantic search. Feel free to explore and customize the code to meet your specific requirements.
+If you have any questions or suggestions, please feel free to open an issue and I'll be happy to help.
 
-## Learn More
+Happy searching!
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+## References
+[Azure Cognitive Search Documentation](https://learn.microsoft.com/azure/search/)
+[Azure OpenAI Documentation](https://learn.microsoft.com/azure/cognitive-services/openai/)
+[Azure Cognitive Services Computer Vision Documentation](https://learn.microsoft.com/azure/cognitive-services/computer-vision/)

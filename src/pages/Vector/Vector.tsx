@@ -21,16 +21,20 @@ interface SearchResult {
   "@search.score?": number;
   "@search.rerankerScore?": number;
   "@search.captions": SearchCaptions[];
+  category: string;
   content: string;
   title: string;
   id: string;
 }
+
 interface SearchCaptions {
   text: string;
   highlights: string;
 }
 
-const generateTextQueryVector = async (queryVector: string) => {
+const generateTextQueryVector = async (
+  queryVector: string
+): Promise<number[]> => {
   const requestData = {
     input: queryVector,
   };
@@ -57,14 +61,14 @@ const getTextSearchResults = async (
   useSemanticRanker: boolean,
   useSemanticCaptions: boolean,
   filterText: string
-) => {
+): Promise<any> => {
   const payload: any = {
     vector: {
       value: vector,
       fields: "contentVector",
       k: 10,
     },
-    select: "title,content",
+    select: "title,content, category",
   };
 
   if (approach === "hs") {
@@ -104,14 +108,14 @@ const Vector: React.FC = () => {
   const [textQueryVector, setTextQueryVector] = useState<number[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
+  const [isConfigPanelOpen, setIsConfigPanelOpen] = useState<boolean>(false);
   const [approach, setApproach] = useState<string>("vec");
   const [filterText, setFilterText] = useState<string>("");
   const [useSemanticRanker, setUseSemanticRanker] = useState<boolean>(false);
   const [useSemanticCaptions, setUseSemanticCaptions] =
     useState<boolean>(false);
 
-  const approaches = useMemo<IChoiceGroupOption[]>(
+  const approaches: IChoiceGroupOption[] = useMemo(
     () => [
       { key: "vec", text: "Vectors Only" },
       { key: "vecf", text: "Vectors with Filter" },
@@ -215,9 +219,10 @@ const Vector: React.FC = () => {
       </div>
       <div className={styles.searchResultsContainer}>
         {searchResults.map((result: SearchResult) => (
-          <Stack horizontal className={styles.searchResultCard}>
-            <div key={result.id} className={styles.textContainer}>
-              <p className={styles.searchResultCardTitle}> {result.title}</p>
+          <Stack horizontal className={styles.searchResultCard} key={result.id}>
+            <div className={styles.textContainer}>
+              <p className={styles.searchResultCardTitle}>{result.title}</p>
+              <p className={styles.category}>{result.category}</p>
               <p
                 dangerouslySetInnerHTML={{
                   __html:
@@ -259,11 +264,11 @@ const Vector: React.FC = () => {
             label="Filter"
             value={filterText}
             onChange={(_ev, newValue) => setFilterText(newValue ?? "")}
-            placeholder="(e.g. category eq 'Databases'"
+            placeholder="(e.g. category eq 'Databases')"
           />
         )}
         {approach === "hs" && (
-          <React.Fragment>
+          <>
             <Checkbox
               className={styles.vectorSettingsSeparator}
               checked={useSemanticRanker}
@@ -277,11 +282,11 @@ const Vector: React.FC = () => {
               onChange={onUseSemanticCaptionsChange}
               disabled={!useSemanticRanker}
             />
-          </React.Fragment>
+          </>
         )}
 
         {textQueryVector && (
-          <React.Fragment>
+          <>
             <p>Embedding model name:</p>
             <code className={styles.textQueryVectorModel}>
               openai text-embedding-ada-002
@@ -290,7 +295,7 @@ const Vector: React.FC = () => {
             <code className={styles.textQueryVector}>
               [{textQueryVector.join(", ")}]
             </code>
-          </React.Fragment>
+          </>
         )}
       </Panel>
     </div>

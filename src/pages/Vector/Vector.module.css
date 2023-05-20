@@ -55,6 +55,17 @@
 .searchResultCardTitle {
   font-size: 22px;
 }
+
+.category {
+  display: inline-block;
+  background-color: #0078d4;
+  color: white;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
 .searchResultCardUrl {
   font-size: 12px;
   color: gray;
