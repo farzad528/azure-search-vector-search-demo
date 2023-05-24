@@ -23,87 +23,11 @@
   margin-top: 1rem;
 }
 
-.noResultsFound {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 2rem;
-}
-
-.noResultsFound > img {
-  object-fit: contain;
-  width: 7rem;
-}
-
 .searchResultsContainer {
   display: flex;
   flex-direction: column;
   margin-top: 1rem;
   gap: 1rem;
-}
-
-.searchResultCard {
-  border-radius: 0.375rem;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12);
-  width: 100%;
-  padding: 10px; 
-  background: white;
-  display: flex;
-}
-
-.searchResultCardTitle {
-  font-size: 18px;
-  margin-bottom: 0; 
-}
-
-.category {
-  display: inline-block;
-  background-color: #0078d4;
-  color: white;
-  font-size: 12px;
-  padding: 2px 6px; 
-  border-radius: 4px;
-  margin-top: 10px;
-
-}
-
-.searchResultCardUrl {
-  font-size: 12px;
-  color: gray;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.searchResultCardCaption {
-  font-size: 10px;
-  margin-top: 4px; 
-}
-
-.searchResultCard > div:first-child {
-  flex: 0 0 90%;
-}
-
-.searchResultCard > div:last-child {
-  flex: 1;
-}
-
-.queryVector {
-  display: flex;
-  flex-wrap: wrap;
-  width: 100%;
-  font-family: monospace;
-  margin-top: 0.25rem;
-}
-
-.searchResultCardSimilarityScore {
-  border-left: 2px solid #ddd;
-  padding-left: 1rem;
-}
-
-.vectorSettingsSeparator {
-  margin-top: 15px;
 }
 
 .semanticAnswerCard {
@@ -116,6 +40,34 @@
   margin-bottom: 1rem;
 }
 
+.searchResultCard {
+  border-radius: 0.375rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12);
+  width: 100%;
+  padding: 10px;
+  background: white;
+  display: flex;
+}
+
 .textContainer {
   flex: 1;
+}
+
+.searchResultCardTitle {
+  font-size: 18px;
+  margin-bottom: 0;
+}
+
+.category {
+  display: inline-block;
+  background-color: #0078d4;
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.vectorSettingsSeparator {
+  margin-top: 15px;
 }
