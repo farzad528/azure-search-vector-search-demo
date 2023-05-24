@@ -16,7 +16,7 @@
 }
 
 .questionInputTextArea {
-  flex: 1; /* Allow TextField to take up remaining space */
+  flex: 1; 
 }
 
 .spinner {
@@ -37,11 +37,11 @@
 }
 
 .searchResultsContainer {
-  display: grid; /* Change this line */
+  display: grid; 
   grid-template-columns: repeat(
     auto-fill,
     minmax(20rem, 1fr)
-  ); /* Add this line */
+  ); 
   margin-top: 1rem;
   gap: 2rem;
 }
@@ -96,7 +96,7 @@
 .imageContainer {
   width: 100%;
   height: 100%;
-  overflow: hidden; /* optional */
+  overflow: hidden; 
 }
 
 .imageContainer img {

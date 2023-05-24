@@ -13,7 +13,6 @@ import {
   DismissCircle24Filled,
   Search24Regular,
   Settings20Regular,
-  TableLightning28Regular,
 } from "@fluentui/react-icons";
 import axios from "axios";
 import styles from "./Vector.module.css";

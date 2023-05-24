@@ -48,7 +48,7 @@
   border-radius: 0.375rem;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12);
   width: 100%;
-  padding: 10px; /* Decreased padding */
+  padding: 10px; 
   background: white;
   display: flex;
 }
@@ -78,7 +78,7 @@
 
 .searchResultCardCaption {
   font-size: 10px;
-  margin-top: 4px; /* Add margin-top */
+  margin-top: 4px; 
 }
 
 .searchResultCard > div:first-child {
