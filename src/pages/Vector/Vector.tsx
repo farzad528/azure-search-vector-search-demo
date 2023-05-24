@@ -13,6 +13,7 @@ import {
   DismissCircle24Filled,
   Search24Regular,
   Settings20Regular,
+  TableLightning28Regular,
 } from "@fluentui/react-icons";
 import axios from "axios";
 import styles from "./Vector.module.css";
@@ -30,6 +31,13 @@ interface SearchResult {
 interface SearchCaptions {
   text: string;
   highlights: string;
+}
+
+interface SemanticAnswer {
+  key: string;
+  text: string;
+  highlights: string;
+  score: number;
 }
 
 const generateTextQueryVector = async (
@@ -87,6 +95,7 @@ const getTextSearchResults = async (
 
   if (useSemanticCaptions) {
     payload.captions = "extractive";
+    payload.answers = "extractive";
     payload.highlightPreTag = "<b>";
     payload.highlightPostTag = "</b>";
   }
@@ -108,6 +117,9 @@ const Vector: React.FC = () => {
   const [textQueryVector, setTextQueryVector] = useState<number[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [semanticAnswer, setSemanticAnswer] = useState<SemanticAnswer | null>(
+    null
+  );
   const [isConfigPanelOpen, setIsConfigPanelOpen] = useState<boolean>(false);
   const [approach, setApproach] = useState<string>("vec");
   const [filterText, setFilterText] = useState<string>("");
@@ -145,6 +157,11 @@ const Vector: React.FC = () => {
           filterText
         );
         setSearchResults(results.value);
+        setSemanticAnswer(
+          results["@search.answers"] && results["@search.answers"][0]
+            ? results["@search.answers"][0]
+            : null
+        );
         setLoading(false);
       }
     },
@@ -218,6 +235,17 @@ const Vector: React.FC = () => {
         {loading && <Spinner label="Getting results" />}
       </div>
       <div className={styles.searchResultsContainer}>
+        {semanticAnswer && (
+          <Stack horizontal className={styles.semanticAnswerCard}>
+            <div className={styles.textContainer}>
+              <p
+                dangerouslySetInnerHTML={{
+                  __html: semanticAnswer.highlights,
+                }}
+              ></p>
+            </div>
+          </Stack>
+        )}
         {searchResults.map((result: SearchResult) => (
           <Stack horizontal className={styles.searchResultCard} key={result.id}>
             <div className={styles.textContainer}>
