@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import {
   Checkbox,
   ChoiceGroup,
@@ -20,6 +20,7 @@ import {
   generateTextQueryVector,
   getTextSearchResults,
 } from "../../api/textSearch";
+import SampleCard from "../../components/SampleCards";
 
 const Vector: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -45,37 +46,55 @@ const Vector: React.FC = () => {
     []
   );
 
+  useEffect(() => {
+    if (searchQuery === "") {
+      setSearchResults([]);
+    }
+  }, [searchQuery]);
+
+  const executeSearch = useCallback(
+    async (query: string) => {
+      if (query.length === 0) {
+        setSearchResults([]);
+        return;
+      }
+
+      setLoading(true);
+      const queryVector = await generateTextQueryVector(query);
+      setTextQueryVector(queryVector);
+      const results = await getTextSearchResults(
+        queryVector,
+        approach,
+        query,
+        useSemanticRanker,
+        useSemanticCaptions,
+        filterText
+      );
+      setSearchResults(results.value);
+      setSemanticAnswer(
+        results["@search.answers"] && results["@search.answers"][0]
+          ? results["@search.answers"][0]
+          : null
+      );
+      setLoading(false);
+    },
+    [approach, filterText, useSemanticCaptions, useSemanticRanker]
+  );
+
   const handleOnKeyDown = useCallback(
     async (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
-        if (searchQuery.length === 0) {
-          setSearchResults([]);
-          return;
-        }
-
-        setLoading(true);
-        const queryVector = await generateTextQueryVector(searchQuery);
-        setTextQueryVector(queryVector);
-        const results = await getTextSearchResults(
-          queryVector,
-          approach,
-          searchQuery,
-          useSemanticRanker,
-          useSemanticCaptions,
-          filterText
-        );
-        setSearchResults(results.value);
-        setSemanticAnswer(
-          results["@search.answers"] && results["@search.answers"][0]
-            ? results["@search.answers"][0]
-            : null
-        );
-        setLoading(false);
+        await executeSearch(searchQuery);
       }
     },
-    [searchQuery, approach, useSemanticRanker, useSemanticCaptions, filterText]
+    [searchQuery, executeSearch]
   );
+
+  const handleSampleCardClick = (query: string) => {
+    setSearchQuery(query);
+    executeSearch(query);
+  };
 
   const handleOnChange = useCallback(
     (
@@ -132,7 +151,6 @@ const Vector: React.FC = () => {
             onKeyDown={handleOnKeyDown}
           />
           <Settings20Regular
-            className={styles.settingsButton}
             onClick={() => setIsConfigPanelOpen(!isConfigPanelOpen)}
           />
           {searchQuery.length > 0 && (
@@ -143,38 +161,62 @@ const Vector: React.FC = () => {
       <div className={styles.spinner}>
         {loading && <Spinner label="Getting results" />}
       </div>
+
       <div className={styles.searchResultsContainer}>
-        {semanticAnswer && (
-          <Stack horizontal className={styles.semanticAnswerCard}>
-            <div className={styles.textContainer}>
-              <p
-                dangerouslySetInnerHTML={{
-                  __html: semanticAnswer.highlights,
-                }}
-              ></p>
-            </div>
-          </Stack>
+        {searchResults.length === 0 && !loading ? (
+          <div className={styles.sampleCardsContainer}>
+            <SampleCard
+              query="tools for software development"
+              onClick={handleSampleCardClick}
+            />
+            <SampleCard
+              query="herramientas para el desarrollo de software"
+              onClick={handleSampleCardClick}
+            />
+            <SampleCard
+              query="scalable storage solution"
+              onClick={handleSampleCardClick}
+            />
+          </div>
+        ) : (
+          <>
+            {semanticAnswer && (
+              <Stack horizontal className={styles.semanticAnswerCard}>
+                <div className={styles.textContainer}>
+                  <p
+                    dangerouslySetInnerHTML={{
+                      __html: semanticAnswer.highlights,
+                    }}
+                  ></p>
+                </div>
+              </Stack>
+            )}
+            {searchResults.map((result: SearchResult) => (
+              <Stack
+                horizontal
+                className={styles.searchResultCard}
+                key={result.id}
+              >
+                <div className={styles.textContainer}>
+                  <p className={styles.searchResultCardTitle}>{result.title}</p>
+                  <p className={styles.category}>{result.category}</p>
+                  <p
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        result["@search.captions"] &&
+                        result["@search.captions"][0].highlights
+                          ? result["@search.captions"][0].highlights
+                          : result["@search.captions"] &&
+                            result["@search.captions"][0].text
+                          ? result["@search.captions"][0].text
+                          : result.content,
+                    }}
+                  ></p>
+                </div>
+              </Stack>
+            ))}
+          </>
         )}
-        {searchResults.map((result: SearchResult) => (
-          <Stack horizontal className={styles.searchResultCard} key={result.id}>
-            <div className={styles.textContainer}>
-              <p className={styles.searchResultCardTitle}>{result.title}</p>
-              <p className={styles.category}>{result.category}</p>
-              <p
-                dangerouslySetInnerHTML={{
-                  __html:
-                    result["@search.captions"] &&
-                    result["@search.captions"][0].highlights
-                      ? result["@search.captions"][0].highlights
-                      : result["@search.captions"] &&
-                        result["@search.captions"][0].text
-                      ? result["@search.captions"][0].text
-                      : result.content,
-                }}
-              ></p>
-            </div>
-          </Stack>
-        ))}
       </div>
 
       <Panel

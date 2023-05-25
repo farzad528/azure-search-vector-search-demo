@@ -44,7 +44,7 @@ export const Layout = () => {
               </li>
               <li className={styles.headerNavLeftMargin}>
                 <a
-                  href="https://aka.ms/entgptsearch"
+                  href="https://github.com/farzad528/azure-search-vector-search-demo"
                   target={"_blank"}
                   title="Github repository link"
                   rel="noreferrer"
@@ -67,7 +67,7 @@ export const Layout = () => {
       <div className={styles.content}>
         <Outlet />  
       </div> 
-      <footer className={styles.footer}>Made with <span className={styles.heart}>❤️</span> by Azure Search Product Group</footer>
+      <footer className={styles.footer}>Made with <span className={styles.heart}>❤️</span> by the Azure Cognitive Search Product Group</footer>
     </div>
   );
 };
