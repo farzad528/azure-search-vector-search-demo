@@ -195,10 +195,12 @@ const Vector: React.FC = () => {
               <Stack
                 horizontal
                 className={styles.searchResultCard}
-                key={result.id}
+                key={result.key}
               >
                 <div className={styles.textContainer}>
-                  <p className={styles.searchResultCardTitle}>{result.title}</p>
+                  <p className={styles.searchResultCardTitle}>
+                    {result.title}{" "}
+                  </p>
                   <p className={styles.category}>{result.category}</p>
                   <p
                     dangerouslySetInnerHTML={{
@@ -212,6 +214,13 @@ const Vector: React.FC = () => {
                           : result.content,
                     }}
                   ></p>
+                </div>
+                <div className={styles.scoreContainer}>
+                  <p className={styles.score}> Score: &nbsp;
+                    {approach === "hs" && useSemanticRanker
+                      ? result["@search.rerankerScore"]
+                      : result["@search.score"]}
+                  </p>
                 </div>
               </Stack>
             ))}

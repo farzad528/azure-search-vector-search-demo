@@ -33,10 +33,12 @@ export const getTextSearchResults = async (
   const payload: any = {
     vector: {
       value: vector,
+      // Change your desired fields here
       fields: "contentVector",
       k: 10,
     },
-    select: "title,content, category",
+    // Optionally, select parameters to reduce the response payload size
+    // select: "title, content, category",
   };
 
   if (approach === "hs") {

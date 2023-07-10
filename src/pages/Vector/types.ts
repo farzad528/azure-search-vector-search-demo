@@ -1,11 +1,20 @@
+// export interface SearchResult {
+//   "@search.score?": number;
+//   "@search.rerankerScore?": number;
+//   "@search.captions": SearchCaptions[];
+//   category: string;
+//   content: string;
+//   title: string;
+//   id: string;
+// }
 export interface SearchResult {
-  "@search.score?": number;
-  "@search.rerankerScore?": number;
+  "@search.score": number;
+  "@search.rerankerScore": number;
   "@search.captions": SearchCaptions[];
-  category: string;
-  content: string;
   title: string;
-  id: string;
+  content: string;
+  category: string;
+  key: string;
 }
 
 export interface SearchCaptions {
