@@ -1,29 +1,35 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import "./index.css";
 import { initializeIcons } from "@fluentui/react";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { createHashRouter, RouterProvider } from "react-router-dom";
+
+import "./index.css";
+
 import { Layout } from "./pages/Layout/Layout";
 import { ImagePage } from "./pages/ImagePage/ImagePage";
 import Vector from "./pages/Vector/Vector";
 
 initializeIcons();
 
-export const App = () => {
-  return (
-    <HashRouter>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Vector />} />
-          <Route path="image" element={<ImagePage />} />
-        </Route>
-      </Routes>
-    </HashRouter>
-  );
-};
+const router = createHashRouter([
+    {
+        path: "/",
+        element: <Layout />,
+        children: [
+            {
+                index: true,
+                element: <Vector />
+            },
+            {
+                path: "image",
+                element: <ImagePage />
+            }
+        ]
+    }
+]);
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+ReactDOM.createRoot(document.getElementById("root")!).render(
+    <React.StrictMode>
+        <RouterProvider router={router} />
+    </React.StrictMode>
 );

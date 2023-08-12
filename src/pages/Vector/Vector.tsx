@@ -1,293 +1,199 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
-import {
-  Checkbox,
-  ChoiceGroup,
-  DefaultButton,
-  IChoiceGroupOption,
-  Panel,
-  Spinner,
-  Stack,
-  TextField,
-} from "@fluentui/react";
-import {
-  DismissCircle24Filled,
-  Search24Regular,
-  Settings20Regular,
-} from "@fluentui/react-icons";
+import { Checkbox, ChoiceGroup, DefaultButton, IChoiceGroupOption, Panel, Spinner, Stack, TextField } from "@fluentui/react";
+import { DismissCircle24Filled, Search24Regular, Settings20Regular } from "@fluentui/react-icons";
+
 import styles from "./Vector.module.css";
-import { SearchResult, SemanticAnswer } from "./types";
-import {
-  generateTextQueryVector,
-  getTextSearchResults,
-} from "../../api/textSearch";
+
+import { TextSearchResult, SemanticAnswer } from "../../api/types";
+import { generateTextQueryVector, getTextSearchResults } from "../../api/textSearch";
 import SampleCard from "../../components/SampleCards";
 
 const Vector: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [textQueryVector, setTextQueryVector] = useState<number[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [semanticAnswer, setSemanticAnswer] = useState<SemanticAnswer | null>(
-    null
-  );
-  const [isConfigPanelOpen, setIsConfigPanelOpen] = useState<boolean>(false);
-  const [approach, setApproach] = useState<string>("vec");
-  const [filterText, setFilterText] = useState<string>("");
-  const [useSemanticRanker, setUseSemanticRanker] = useState<boolean>(false);
-  const [useSemanticCaptions, setUseSemanticCaptions] =
-    useState<boolean>(false);
+    const [searchQuery, setSearchQuery] = useState<string>("");
+    const [textQueryVector, setTextQueryVector] = useState<number[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [searchResults, setSearchResults] = useState<TextSearchResult[]>([]);
+    const [semanticAnswer, setSemanticAnswer] = useState<SemanticAnswer | null>(null);
+    const [isConfigPanelOpen, setIsConfigPanelOpen] = useState<boolean>(false);
+    const [approach, setApproach] = useState<string>("vec");
+    const [filterText, setFilterText] = useState<string>("");
+    const [useSemanticRanker, setUseSemanticRanker] = useState<boolean>(false);
+    const [useSemanticCaptions, setUseSemanticCaptions] = useState<boolean>(false);
 
-  const approaches: IChoiceGroupOption[] = useMemo(
-    () => [
-      { key: "vec", text: "Vectors Only" },
-      { key: "vecf", text: "Vectors with Filter" },
-      { key: "hs", text: "Vectors + Text (Hybrid Search)" },
-    ],
-    []
-  );
+    const approaches: IChoiceGroupOption[] = useMemo(
+        () => [
+            { key: "vec", text: "Vectors Only" },
+            { key: "vecf", text: "Vectors with Filter" },
+            { key: "hs", text: "Vectors + Text (Hybrid Search)" }
+        ],
+        []
+    );
 
-  useEffect(() => {
-    if (searchQuery === "") {
-      setSearchResults([]);
-    }
-  }, [searchQuery]);
+    useEffect(() => {
+        if (searchQuery === "") {
+            setSearchResults([]);
+        }
+    }, [searchQuery]);
 
-  const executeSearch = useCallback(
-    async (query: string) => {
-      if (query.length === 0) {
-        setSearchResults([]);
-        return;
-      }
+    const executeSearch = useCallback(
+        async (query: string) => {
+            if (query.length === 0) {
+                setSearchResults([]);
+                return;
+            }
 
-      setLoading(true);
-      const queryVector = await generateTextQueryVector(query);
-      setTextQueryVector(queryVector);
-      const results = await getTextSearchResults(
-        queryVector,
-        approach,
-        query,
-        useSemanticRanker,
-        useSemanticCaptions,
-        filterText
-      );
-      setSearchResults(results.value);
-      setSemanticAnswer(
-        results["@search.answers"] && results["@search.answers"][0]
-          ? results["@search.answers"][0]
-          : null
-      );
-      setLoading(false);
-    },
-    [approach, filterText, useSemanticCaptions, useSemanticRanker]
-  );
+            setLoading(true);
+            const queryVector = await generateTextQueryVector(query);
+            setTextQueryVector(queryVector);
+            const results = await getTextSearchResults(queryVector, approach, query, useSemanticRanker, useSemanticCaptions, filterText);
+            setSearchResults(results.value);
+            setSemanticAnswer(results["@search.answers"]?.[0] ? results["@search.answers"][0] : null);
+            setLoading(false);
+        },
+        [approach, filterText, useSemanticCaptions, useSemanticRanker]
+    );
 
-  const handleOnKeyDown = useCallback(
-    async (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        await executeSearch(searchQuery);
-      }
-    },
-    [searchQuery, executeSearch]
-  );
+    const handleOnKeyDown = useCallback(
+        async (e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                await executeSearch(searchQuery);
+            }
+        },
+        [searchQuery, executeSearch]
+    );
 
-  const handleSampleCardClick = (query: string) => {
-    setSearchQuery(query);
-    executeSearch(query);
-  };
+    const handleSampleCardClick = (query: string) => {
+        setSearchQuery(query);
+        void executeSearch(query);
+    };
 
-  const handleOnChange = useCallback(
-    (
-      _ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>,
-      newValue?: string
-    ) => {
-      setSearchQuery(newValue ?? "");
-    },
-    []
-  );
+    const handleOnChange = useCallback((_ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
+        setSearchQuery(newValue ?? "");
+    }, []);
 
-  const onApproachChange = useCallback(
-    (
-      _ev?: React.FormEvent<HTMLElement | HTMLInputElement>,
-      option?: IChoiceGroupOption
-    ) => {
-      setApproach(option?.key ?? "vec");
-    },
-    []
-  );
+    const onApproachChange = useCallback((_ev?: React.FormEvent<HTMLElement | HTMLInputElement>, option?: IChoiceGroupOption) => {
+        setApproach(option?.key ?? "vec");
+    }, []);
 
-  const onUseSemanticRankerChange = useCallback(
-    (
-      _ev?: React.FormEvent<HTMLElement | HTMLInputElement>,
-      checked?: boolean
-    ) => {
-      setUseSemanticRanker(!!checked);
-    },
-    []
-  );
+    const onUseSemanticRankerChange = useCallback((_ev?: React.FormEvent<HTMLElement | HTMLInputElement>, checked?: boolean) => {
+        setUseSemanticRanker(!!checked);
+    }, []);
 
-  const onUseSemanticCaptionsChange = useCallback(
-    (
-      _ev?: React.FormEvent<HTMLElement | HTMLInputElement>,
-      checked?: boolean
-    ) => {
-      setUseSemanticCaptions(!!checked);
-    },
-    []
-  );
+    const onUseSemanticCaptionsChange = useCallback((_ev?: React.FormEvent<HTMLElement | HTMLInputElement>, checked?: boolean) => {
+        setUseSemanticCaptions(!!checked);
+    }, []);
 
-  return (
-    <div className={styles.vectorContainer}>
-      <div>
-        <Stack horizontal className={styles.questionInputContainer}>
-          <Search24Regular />
-          <TextField
-            className={styles.questionInputTextArea}
-            resizable={false}
-            borderless
-            value={searchQuery}
-            placeholder="Type something here (e.g. networking services)"
-            onChange={handleOnChange}
-            onKeyDown={handleOnKeyDown}
-          />
-          <Settings20Regular
-            onClick={() => setIsConfigPanelOpen(!isConfigPanelOpen)}
-          />
-          {searchQuery.length > 0 && (
-            <DismissCircle24Filled onClick={() => setSearchQuery("")} />
-          )}
-        </Stack>
-      </div>
-      <div className={styles.spinner}>
-        {loading && <Spinner label="Getting results" />}
-      </div>
+    return (
+        <div className={styles.vectorContainer}>
+            <Stack horizontal className={styles.questionInputContainer}>
+                <Search24Regular />
+                <TextField
+                    className={styles.questionInputTextArea}
+                    resizable={false}
+                    borderless
+                    value={searchQuery}
+                    placeholder="Type something here (e.g. networking services)"
+                    onChange={handleOnChange}
+                    onKeyDown={handleOnKeyDown}
+                />
+                <Settings20Regular onClick={() => setIsConfigPanelOpen(!isConfigPanelOpen)} />
+                {searchQuery.length > 0 && <DismissCircle24Filled onClick={() => setSearchQuery("")} />}
+            </Stack>
+            <div className={styles.spinner}>{loading && <Spinner label="Getting results" />}</div>
+            <div className={styles.searchResultsContainer}>
+                {searchResults.length === 0 && !loading ? (
+                    <div className={styles.sampleCardsContainer}>
+                        <SampleCard query="tools for software development" onClick={handleSampleCardClick} />
+                        <SampleCard query="herramientas para el desarrollo de software" onClick={handleSampleCardClick} />
+                        <SampleCard query="scalable storage solution" onClick={handleSampleCardClick} />
+                    </div>
+                ) : (
+                    <>
+                        {semanticAnswer && (
+                            <Stack horizontal className={styles.semanticAnswerCard}>
+                                <div className={styles.textContainer}>
+                                    <p
+                                        dangerouslySetInnerHTML={{
+                                            __html: semanticAnswer.highlights
+                                        }}
+                                    ></p>
+                                </div>
+                            </Stack>
+                        )}
+                        {searchResults.map((result: TextSearchResult) => (
+                            <Stack horizontal className={styles.searchResultCard} key={result.id}>
+                                <div className={styles.textContainer}>
+                                    <p className={styles.searchResultCardTitle}>{result.title} </p>
+                                    <p className={styles.category}>{result.category}</p>
+                                    <p
+                                        dangerouslySetInnerHTML={{
+                                            __html: result["@search.captions"]?.[0].highlights
+                                                ? result["@search.captions"][0].highlights
+                                                : result["@search.captions"]?.[0].text
+                                                ? result["@search.captions"][0].text
+                                                : result.content
+                                        }}
+                                    ></p>
+                                </div>
+                                <div className={styles.scoreContainer}>
+                                    <p className={styles.score}>
+                                        {`Score: ${approach === "hs" && useSemanticRanker ? result["@search.rerankerScore"] : result["@search.score"]}`}
+                                    </p>
+                                </div>
+                            </Stack>
+                        ))}
+                    </>
+                )}
+            </div>
 
-      <div className={styles.searchResultsContainer}>
-        {searchResults.length === 0 && !loading ? (
-          <div className={styles.sampleCardsContainer}>
-            <SampleCard
-              query="tools for software development"
-              onClick={handleSampleCardClick}
-            />
-            <SampleCard
-              query="herramientas para el desarrollo de software"
-              onClick={handleSampleCardClick}
-            />
-            <SampleCard
-              query="scalable storage solution"
-              onClick={handleSampleCardClick}
-            />
-          </div>
-        ) : (
-          <>
-            {semanticAnswer && (
-              <Stack horizontal className={styles.semanticAnswerCard}>
-                <div className={styles.textContainer}>
-                  <p
-                    dangerouslySetInnerHTML={{
-                      __html: semanticAnswer.highlights,
-                    }}
-                  ></p>
-                </div>
-              </Stack>
-            )}
-            {searchResults.map((result: SearchResult) => (
-              <Stack
-                horizontal
-                className={styles.searchResultCard}
-                key={result.key}
-              >
-                <div className={styles.textContainer}>
-                  <p className={styles.searchResultCardTitle}>
-                    {result.title}{" "}
-                  </p>
-                  <p className={styles.category}>{result.category}</p>
-                  <p
-                    dangerouslySetInnerHTML={{
-                      __html:
-                        result["@search.captions"] &&
-                        result["@search.captions"][0].highlights
-                          ? result["@search.captions"][0].highlights
-                          : result["@search.captions"] &&
-                            result["@search.captions"][0].text
-                          ? result["@search.captions"][0].text
-                          : result.content,
-                    }}
-                  ></p>
-                </div>
-                <div className={styles.scoreContainer}>
-                  <p className={styles.score}> Score: &nbsp;
-                    {approach === "hs" && useSemanticRanker
-                      ? result["@search.rerankerScore"]
-                      : result["@search.score"]}
-                  </p>
-                </div>
-              </Stack>
-            ))}
-          </>
-        )}
-      </div>
+            <Panel
+                headerText="Settings"
+                isOpen={isConfigPanelOpen}
+                isBlocking={false}
+                onDismiss={() => setIsConfigPanelOpen(false)}
+                closeButtonAriaLabel="Close"
+                onRenderFooterContent={() => <DefaultButton onClick={() => setIsConfigPanelOpen(false)}>Close</DefaultButton>}
+                isFooterAtBottom={true}
+            >
+                <ChoiceGroup label="Retrieval mode" options={approaches} defaultSelectedKey="vec" onChange={onApproachChange} />
+                {approach === "vecf" && (
+                    <TextField
+                        label="Filter"
+                        value={filterText}
+                        onChange={(_ev, newValue) => setFilterText(newValue ?? "")}
+                        placeholder="(e.g. category eq 'Databases')"
+                    />
+                )}
+                {approach === "hs" && (
+                    <>
+                        <Checkbox
+                            className={styles.vectorSettingsSeparator}
+                            checked={useSemanticRanker}
+                            label="Use semantic ranker for retrieval"
+                            onChange={onUseSemanticRankerChange}
+                        />
+                        <Checkbox
+                            className={styles.vectorSettingsSeparator}
+                            checked={useSemanticCaptions}
+                            label="Use semantic captions"
+                            onChange={onUseSemanticCaptionsChange}
+                            disabled={!useSemanticRanker}
+                        />
+                    </>
+                )}
 
-      <Panel
-        headerText="See Query Vector"
-        isOpen={isConfigPanelOpen}
-        isBlocking={false}
-        onDismiss={() => setIsConfigPanelOpen(false)}
-        closeButtonAriaLabel="Close"
-        onRenderFooterContent={() => (
-          <DefaultButton onClick={() => setIsConfigPanelOpen(false)}>
-            Close
-          </DefaultButton>
-        )}
-        isFooterAtBottom={true}
-      >
-        <ChoiceGroup
-          label="Retreival mode"
-          options={approaches}
-          defaultSelectedKey="vec"
-          onChange={onApproachChange}
-        />
-        {approach === "vecf" && (
-          <TextField
-            label="Filter"
-            value={filterText}
-            onChange={(_ev, newValue) => setFilterText(newValue ?? "")}
-            placeholder="(e.g. category eq 'Databases')"
-          />
-        )}
-        {approach === "hs" && (
-          <>
-            <Checkbox
-              className={styles.vectorSettingsSeparator}
-              checked={useSemanticRanker}
-              label="Use semantic ranker for retrieval"
-              onChange={onUseSemanticRankerChange}
-            />
-            <Checkbox
-              className={styles.vectorSettingsSeparator}
-              checked={useSemanticCaptions}
-              label="Use semantic captions"
-              onChange={onUseSemanticCaptionsChange}
-              disabled={!useSemanticRanker}
-            />
-          </>
-        )}
-
-        {textQueryVector && (
-          <>
-            <p>Embedding model name:</p>
-            <code className={styles.textQueryVectorModel}>
-              openai text-embedding-ada-002
-            </code>
-            <p>Text query vector:</p>
-            <code className={styles.textQueryVector}>
-              [{textQueryVector.join(", ")}]
-            </code>
-          </>
-        )}
-      </Panel>
-    </div>
-  );
+                {textQueryVector && (
+                    <>
+                        <p>Embedding model name:</p>
+                        <code className={styles.textQueryVectorModel}>openai text-embedding-ada-002</code>
+                        <p>Text query vector:</p>
+                        <code className={styles.textQueryVector}>[{textQueryVector.join(", ")}]</code>
+                    </>
+                )}
+            </Panel>
+        </div>
+    );
 };
 
 export default Vector;
