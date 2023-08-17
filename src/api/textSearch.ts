@@ -27,40 +27,44 @@ export const getTextSearchResults = async (
     vector: number[],
     approach: string,
     searchQuery: string,
-    useSemanticRanker: boolean,
     useSemanticCaptions: boolean,
     filterText: string
 ): Promise<SearchResponse<TextSearchResult>> => {
     const payload: SearchRequest = {
-        vector: {
-            value: vector,
-            // Change your desired fields here
-            fields: "contentVector",
-            k: 10
-        }
         // Optionally, select parameters to reduce the response payload size
         // select: "title, content, category",
     };
 
-    if (approach === "hs") {
+    if (!approach || approach === "text") {
         payload.search = searchQuery;
-    }
+    } else {
+        payload.vector = {
+            value: vector,
+            // Change your desired fields here
+            fields: "contentVector",
+            k: 10
+        };
 
-    if (approach === "vecf") {
-        payload.filter = filterText;
-    }
+        if (approach === "hs") {
+            payload.search = searchQuery;
+        }
 
-    if (useSemanticRanker) {
-        payload.queryType = "semantic";
-        payload.queryLanguage = "en-us";
-        payload.semanticConfiguration = "my-semantic-config";
-    }
+        if (approach === "vecf") {
+            payload.filter = filterText;
+        }
 
-    if (useSemanticCaptions) {
-        payload.captions = "extractive";
-        payload.answers = "extractive";
-        payload.highlightPreTag = "<b>";
-        payload.highlightPostTag = "</b>";
+        if (approach === "hssr") {
+            payload.search = searchQuery;
+            payload.queryType = "semantic";
+            payload.queryLanguage = "en-us";
+            payload.semanticConfiguration = "my-semantic-config";
+            if (useSemanticCaptions) {
+                payload.captions = "extractive";
+                payload.answers = "extractive";
+                payload.highlightPreTag = "<b>";
+                payload.highlightPostTag = "</b>";
+            }
+        }
     }
 
     const url = `${import.meta.env.VITE_SEARCH_SERVICE_ENDPOINT}/indexes/${import.meta.env.VITE_SEARCH_TEXT_INDEX_NAME}/docs/search?api-version=${
