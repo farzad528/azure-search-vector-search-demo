@@ -20,7 +20,7 @@ const Vector: React.FC = () => {
     const [selectedApproachKeys, setSelectedApproachKeys] = useState<string[]>(["text"]);
     const [filterText, setFilterText] = useState<string>("");
     const [useSemanticCaptions, setUseSemanticCaptions] = useState<boolean>(false);
-    const [hideScores, setHideScores] = React.useState<boolean>(false);
+    const [hideScores, setHideScores] = React.useState<boolean>(true);
     const [errors, setErrors] = React.useState<string[]>([]);
 
     const approaches: Approach[] = useMemo(
@@ -152,11 +152,11 @@ const Vector: React.FC = () => {
                     </div>
                 ) : (
                     <>
-                        <Stack horizontal tokens={{ childrenGap: "10px" }}>
+                        <Stack horizontal tokens={{ childrenGap: "12px" }}>
                             {resultCards.map(resultCard => (
                                 <div key={resultCard.approachKey}>
                                     <p className={styles.approach}>{approaches.find(a => a.key === resultCard.approachKey)?.text} </p>
-                                    {!resultCard.semanticAnswer && !resultCard.searchResults.length && (
+                                    {/* {!resultCard.semanticAnswer && !resultCard.searchResults.length && (
                                         <p className={styles.searchResultCardTitle}>{"No Results Found"} </p>
                                     )}
                                     {resultCard.semanticAnswer && (
@@ -169,7 +169,7 @@ const Vector: React.FC = () => {
                                                 ></p>
                                             </div>
                                         </Stack>
-                                    )}
+                                    )} */}
                                     {resultCard.searchResults.map((result: TextSearchResult) => (
                                         <Stack horizontal className={styles.searchResultCard} key={result.id}>
                                             <div className={styles.textContainer}>
@@ -183,22 +183,36 @@ const Vector: React.FC = () => {
                                                             <p className={styles.score}>
                                                                 {`Score: ${
                                                                     resultCard.approachKey === "hssr"
-                                                                        ? result["@search.rerankerScore"]
-                                                                        : result["@search.score"]
+                                                                        ? result["@search.rerankerScore"]?.toFixed(3)
+                                                                        : result["@search.score"]?.toFixed(3)
                                                                 }`}
                                                             </p>
                                                         </div>
                                                     )}
                                                 </Stack>
                                                 <p
+                                                    style={{ fontSize: "12px" }}
                                                     dangerouslySetInnerHTML={{
-                                                        __html: result["@search.captions"]?.[0].highlights
-                                                            ? result["@search.captions"][0].highlights
-                                                            : result["@search.captions"]?.[0].text
-                                                            ? result["@search.captions"][0].text
-                                                            : result.content
+                                                        __html:
+                                                            (
+                                                                (result["@search.captions"]?.[0].highlights
+                                                                    ? result["@search.captions"][0].highlights.slice(0, 350)
+                                                                    : result["@search.captions"]?.[0].text
+                                                                    ? result["@search.captions"][0].text.slice(0, 350)
+                                                                    : result.content.slice(0, 300)) || ""
+                                                            ).length >= 300
+                                                                ? ((result["@search.captions"]?.[0].highlights
+                                                                      ? result["@search.captions"][0].highlights.slice(0, 350)
+                                                                      : result["@search.captions"]?.[0].text
+                                                                      ? result["@search.captions"][0].text.slice(0, 350)
+                                                                      : result.content.slice(0, 300)) || "") + "..."
+                                                                : (result["@search.captions"]?.[0].highlights
+                                                                      ? result["@search.captions"][0].highlights.slice(0, 350)
+                                                                      : result["@search.captions"]?.[0].text
+                                                                      ? result["@search.captions"][0].text.slice(0, 350)
+                                                                      : result.content.slice(0, 300)) || ""
                                                     }}
-                                                ></p>
+                                                />
                                             </div>
                                         </Stack>
                                     ))}
@@ -219,11 +233,11 @@ const Vector: React.FC = () => {
                 isFooterAtBottom={true}
             >
                 <Toggle
-                    label="Hide Scores"
-                    checked={hideScores}
+                    label="Show scores" //
+                    checked={!hideScores} //
                     inlineLabel
                     onChange={(_, checked) => {
-                        checked ? setHideScores(true) : setHideScores(false);
+                        checked ? setHideScores(false) : setHideScores(true); //
                     }}
                 />
                 <p className={styles.retrievalMode}>Retrieval mode</p>
