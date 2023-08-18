@@ -1,5 +1,5 @@
 export interface SearchRequest {
-    vector: {
+    vector?: {
         value: number[];
         fields: string;
         k: number;
@@ -63,4 +63,22 @@ export interface TextEmbeddingResponse {
 
 export interface ImageEmbeddingResponse {
     vector: number[];
+}
+
+export interface Approach {
+    key: string;
+    text: string;
+}
+
+export interface ResultCard {
+    approachKey: string;
+    searchResults: TextSearchResult[];
+    semanticAnswer: SemanticAnswer | null;
+}
+
+export interface AxiosErrorResponseData {
+    error: {
+        code: string;
+        message: string;
+    };
 }
