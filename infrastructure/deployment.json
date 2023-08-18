@@ -1,0 +1,201 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "type": "string"
+        },
+        "OPENAI_SERVICE_ENDPOINT": {
+            "type": "string"
+        },
+        "OPENAI_DEPLOYMENT_NAME": {
+            "type": "string"
+        },
+        "OPENAI_API_VERSION": {
+            "type": "string",
+            "defaultValue": "2023-05-15"
+        },
+        "OPENAI_API_KEY": {
+            "type": "string"
+        },
+        "SEARCH_SERVICE_ENDPOINT": {
+            "type": "string"
+        },
+        "SEARCH_SERVICE_NAME": {
+            "type": "string"
+        },
+        "SEARCH_SERVICE_ADMIN_KEY": {
+            "type": "string"
+        },
+        "SEARCH_IMAGE_INDEX_NAME": {
+            "type": "string"
+        },
+        "SEARCH_TEXT_INDEX_NAME": {
+            "type": "string"
+        },
+        "SEARCH_API_VERSION": {
+            "type": "string",
+            "defaultValue": "2023-07-01-Preview"
+        },
+        "COGNITIVE_SERVICES_API_KEY": {
+            "type": "string"
+        },
+        "COGNITIVE_SERVICES_ENDPOINT": {
+            "type": "string"
+        },
+        "COGNITIVE_SERVICES_API_VERSION": {
+            "type": "string",
+            "defaultValue": "2023-02-01-preview"
+        },
+        "containers": {
+            "type": "array",
+            "defaultValue": [
+                {
+                    "name": "acs-vectors",
+                    "image": "fruoccopublic.azurecr.io/acs-vector-demo:latest",
+                    "command": [],
+                    "resources": {
+                        "cpu": 0.25,
+                        "memory": ".5Gi"
+                    },
+                    "env": [
+                        {
+                            "name": "VITE_OPENAI_SERVICE_ENDPOINT",
+                            "value": "[parameters('OPENAI_SERVICE_ENDPOINT')]"
+                        },
+                        {
+                            "name": "VITE_OPENAI_DEPLOYMENT_NAME",
+                            "value": "[parameters('OPENAI_DEPLOYMENT_NAME')]"
+                        },
+                        {
+                            "name": "VITE_OPENAI_API_VERSION",
+                            "value": "[parameters('OPENAI_API_VERSION')]"
+                        },
+                        {
+                            "name": "VITE_OPENAI_API_KEY",
+                            "value": "[parameters('OPENAI_API_KEY')]"
+                        },
+                        {
+                            "name": "VITE_SEARCH_SERVICE_ENDPOINT",
+                            "value": "[parameters('SEARCH_SERVICE_ENDPOINT')]"
+                        },
+                        {
+                            "name": "VITE_SEARCH_SERVICE_NAME",
+                            "value": "[parameters('SEARCH_SERVICE_NAME')]"
+                        },
+                        {
+                            "name": "VITE_SEARCH_SERVICE_ADMIN_KEY",
+                            "value": "[parameters('SEARCH_SERVICE_ADMIN_KEY')]"
+                        },
+                        {
+                            "name": "VITE_SEARCH_IMAGE_INDEX_NAME",
+                            "value": "[parameters('SEARCH_IMAGE_INDEX_NAME')]"
+                        },
+                        {
+                            "name": "VITE_SEARCH_TEXT_INDEX_NAME",
+                            "value": "[parameters('SEARCH_TEXT_INDEX_NAME')]"
+                        },
+                        {
+                            "name": "VITE_SEARCH_API_VERSION",
+                            "value": "[parameters('SEARCH_API_VERSION')]"
+                        },
+                        {
+                            "name": "VITE_COGNITIVE_SERVICES_API_KEY",
+                            "value": "[parameters('COGNITIVE_SERVICES_API_KEY')]"
+                        },
+                        {
+                            "name": "VITE_COGNITIVE_SERVICES_ENDPOINT",
+                            "value": "[parameters('COGNITIVE_SERVICES_ENDPOINT')]"
+                        },
+                        {
+                            "name": "VITE_COGNITIVE_SERVICES_API_VERSION",
+                            "value": "[parameters('COGNITIVE_SERVICES_API_VERSION')]"
+                        }
+                    ]
+                }
+            ]
+        },
+        "secrets": {
+            "type": "secureObject",
+            "defaultValue": {
+                "arrayValue": []
+            }
+        },
+        "ingress": {
+            "type": "object",
+            "defaultValue": {
+                "external": true,
+                "transport": "Auto",
+                "allowInsecure": false,
+                "targetPort": 3000,
+                "stickySessions": {
+                    "affinity": "none"
+                }
+            }
+        },
+        "environmentName": {
+            "type": "string"
+        },
+        "workspaceName": {
+            "type": "string"
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "2023-04-01-preview",
+            "name": "[parameters('name')]",
+            "type": "Microsoft.App/containerapps",
+            "kind": "containerapps",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.App/managedEnvironments/', parameters('environmentName'))]"
+            ],
+            "properties": {
+                "environmentId": "[resourceId('Microsoft.App/managedEnvironments/', parameters('environmentName'))]",
+                "configuration": {
+                    "secrets": "[parameters('secrets').arrayValue]",
+                    "activeRevisionsMode": "Single",
+                    "ingress": "[parameters('ingress')]"
+                },
+                "template": {
+                    "containers": "[parameters('containers')]",
+                    "scale": {
+                        "minReplicas": 0
+                    }
+                }
+            }
+        },
+                {
+            "apiVersion": "2023-04-01-preview",
+            "name": "[parameters('environmentName')]",
+            "type": "Microsoft.App/managedEnvironments",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName'))]"
+            ],
+            "properties": {
+                "appLogsConfiguration": {
+                    "destination": "log-analytics",
+                    "logAnalyticsConfiguration": {
+                        "customerId": "[reference(concat('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName')), '2020-08-01').customerId]",
+                        "sharedKey": "[listKeys(concat('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName')), '2020-08-01').primarySharedKey]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2020-08-01",
+            "name": "[parameters('workspaceName')]",
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [],
+            "properties": {
+                "sku": {
+                    "name": "PerGB2018"
+                },
+                "retentionInDays": 30,
+                "workspaceCapping": {}
+            }
+        }
+    ]
+}

@@ -1,0 +1,6 @@
+WebApp.dockerignore
+node_modules
+.github
+.vscode
+.gitgnore
+docker

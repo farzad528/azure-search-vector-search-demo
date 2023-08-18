@@ -28,6 +28,17 @@ Azure Cognitive Search supports searching using pure vectors, pure text, or in h
 
 Preview functionality is provided under [Supplemental Terms of Use](https://azure.microsoft.com/en-us/support/legal/preview-supplemental-terms/), without a service level agreement, and isn't recommended for production workloads.
 
+## Run a docker image
+```
+docker run -p 80:3000 -t fruoccopublic.azurecr.io/acs-vector-demo
+```
+### Build a docker image
+```
+docker build -f docker/WebApp.Dockerfile -t YOUR_CONTAINER_REGISTRY/YOUR_IMAGE_NAME .
+```
+### Run it as a Container App in Azure
+ [![Deploy to Azure](https://aka.ms/deploytoazurebutton)]()
+
 ## Setup and Local Development
 
 1. Clone this repository to your local machine.
