@@ -35,7 +35,7 @@ export const getImageSearchResults = async (vector: number[]): Promise<SearchRes
 
     const url = `${import.meta.env.VITE_SEARCH_SERVICE_ENDPOINT}/indexes/${import.meta.env.VITE_SEARCH_IMAGE_INDEX_NAME}/docs/search?api-version=${
         import.meta.env.VITE_SEARCH_API_VERSION
-    }&model-version=${import.meta.env.VITE_SEARCH_MODEL_VERSION}`;
+    }`;
     const response = await axios.post<SearchResponse<ImageSearchResult>>(url, payload, {
         headers: {
             "Content-Type": "application/json",
