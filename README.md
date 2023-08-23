@@ -1,6 +1,6 @@
-# Vector Search Demo with Azure Cognitive Search
+# Vector Search Comparision Tool
 
-This repository contains a React application that showcases a Vector Search Demo using Azure Cognitive Search. The demo leverages OpenAI for text embeddings and Azure AI Vision API for image embeddings.
+This repository contains a React application that showcases the different retrieval modes in Azure Cognitive Search. The demo leverages OpenAI for text embeddings and Azure AI Vision API for image embeddings and how to compare
 
 You can find a live demo at [aks.ms/VectorSearchDemo](https://gentle-desert-086f73910.3.azurestaticapps.net/#/)
 
@@ -12,6 +12,7 @@ You can find a live demo at [aks.ms/VectorSearchDemo](https://gentle-desert-086f
 -   Perform vector search queries on text data, including vector searches with metadata filtering and hybrid (text + vectors) search.
 -   Generate image embeddings using Azure AI Vision API.
 -   Perform vector searches from text to images and image to images (coming soon)
+-   Perform vector searches over audio (coming soon)
 
 ## Prerequisites
 
@@ -70,7 +71,7 @@ This will start the application on https://localhost:5173/.
 
 2. The Vector Search Demo allows you to search for text queries by entering them in the search bar and pressing Enter. The application will generate text embeddings using OpenAI and perform vector searches on the data stored in Azure Cognitive Search.
 
-3. The search results will be displayed as cards. Feel free to click on the settings icon to explore the different query approaches such as Hybrid Search and Hybrid Search with Semantic Ranking, Captions, and Highlights powered by Microsoft Bing. Note that you will need to enroll in a Semantic Plan in your Azure Cognitive Search service to use this feature. See [Semantic search](https://learn.microsoft.com/azure/search/semantic-search-overview).
+3. The search results will be displayed as cards. Feel free to click on the settings icon to explore the different query approaches such as Hybrid Search and Hybrid Search with Semantic Reranking, Captions, and Highlights powered by Microsoft Bing. Note that you will need to enroll in a Semantic Plan in your Azure Cognitive Search service to use this feature. See [Semantic search](https://learn.microsoft.com/azure/search/semantic-search-overview).
 
 ## Deploying to Azure
 

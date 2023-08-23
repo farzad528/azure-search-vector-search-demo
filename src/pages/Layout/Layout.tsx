@@ -12,7 +12,7 @@ export const Layout = () => {
                 <div className={styles.headerContainer}>
                     <Link to="/" className={styles.headerTitleContainer}>
                         <img src={searchLogo} alt="Azure Cognitive Search logo" className={styles.headerLogo} />
-                        <h3 className={styles.headerTitle}>Vector Search Demo</h3>
+                        <h3 className={styles.headerTitle}>Vector Search Comparision Tool</h3>
                     </Link>
                     <nav>
                         <ul className={styles.headerNavList}>
